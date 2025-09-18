@@ -10,28 +10,28 @@ const UserHome: React.FC = () => {
       id: 1,
       name: 'Hoa hồng đỏ',
       price: '299,000',
-      image: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=300&h=300&fit=crop',
+      image: 'https://i.pinimg.com/736x/9e/f7/aa/9ef7aafc0faf2841e4e759610e3302ff.jpg',
       rating: 4.8
     },
     {
       id: 2,
       name: 'Hoa tulip vàng',
       price: '199,000',
-      image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=300&h=300&fit=crop',
+      image: 'https://img.pikbest.com/backgrounds/20250220/the-golden-glow-of-yellow-tulips-nature-e2-80-99s-brightest-gift_11540353.jpg!w700wp',
       rating: 4.6
     },
     {
       id: 3,
       name: 'Hoa cẩm chướng',
       price: '149,000',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
+      image: 'https://tiki.vn/blog/wp-content/uploads/2024/01/cam-hoa-cam-chuong.jpg',
       rating: 4.7
     },
     {
       id: 4,
       name: 'Hoa ly trắng',
       price: '399,000',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=300&fit=crop',
+      image: 'https://ngoctangarden.com/wp-content/uploads/2022/10/y-nghia-hoa-ly-trang-1.jpg',
       rating: 4.9
     }
   ];
@@ -153,7 +153,7 @@ const UserHome: React.FC = () => {
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-72 object-cover"
                 />
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">

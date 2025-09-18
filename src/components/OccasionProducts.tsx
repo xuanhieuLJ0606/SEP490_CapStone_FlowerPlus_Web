@@ -22,74 +22,74 @@ const OCCASION_LABELS: Record<OccasionKey, string> = {
 const MOCK_DATA: Record<OccasionKey, { bouquets: ProductItem[]; vases: ProductItem[] }> = {
   valentine: {
     bouquets: [
-      { id: 1, name: 'Bó hồng đỏ tình yêu', price: '399,000', image: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&h=480&fit=crop&auto=format' },
-      { id: 2, name: 'Bó hồng pastel', price: '459,000', image: 'https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?w=600&h=480&fit=crop&auto=format' },
-      { id: 3, name: 'Bó tulip hồng', price: '549,000', image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=600&h=480&fit=crop&auto=format' },
+      { id: 1, name: 'Bó hồng đỏ tình yêu', price: '399,000', image: 'https://giaohoasieutoc.com/upload/product/950000-3846.webp' },
+      { id: 2, name: 'Bó hồng pastel', price: '459,000', image: 'https://hoahanoi.com.vn/wp-content/uploads/2020/09/bo-hong-pastel-e1598947025944.jpg' },
+      { id: 3, name: 'Bó tulip hồng', price: '549,000', image: 'https://product.hstatic.net/200000732679/product/13_c39b0b0004cc422d8e35f5cb83f4a2d1.png' },
     ],
     vases: [
-      { id: 4, name: 'Lọ hồng đỏ', price: '499,000', image: 'https://images.unsplash.com/photo-1521334726092-b509a19597c6?w=600&h=480&fit=crop&auto=format' },
-      { id: 5, name: 'Lọ tulip trắng', price: '569,000', image: 'https://images.unsplash.com/photo-1436891620584-47fd0e565afb?w=600&h=480&fit=crop&auto=format' },
-      { id: 6, name: 'Lọ mix pastel', price: '629,000', image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&h=480&fit=crop&auto=format' },
+      { id: 4, name: 'Lọ hồng đỏ', price: '499,000', image: 'https://flexdecor.vn/wp-content/uploads/2022/11/Hoa-hong-do-vai-lua-nhung-de-ban-HNT0432-1.jpg' },
+      { id: 5, name: 'Lọ tulip trắng', price: '569,000', image: 'https://ironstyle.vn/uploads/images/20231/l%E1%BB%8D%20hoa%20tulip%20tr%E1%BA%AFng.jpg' },
+      { id: 6, name: 'Lọ mix pastel', price: '629,000', image: 'https://down-vn.img.susercontent.com/file/vn-11134207-7ras8-m0oie6cgptvz22' },
     ],
   },
   womensDay: {
     bouquets: [
-      { id: 7, name: 'Bó hướng dương', price: '359,000', image: 'https://images.unsplash.com/photo-1437419764061-2473afe69fc2?w=600&h=480&fit=crop&auto=format' },
-      { id: 8, name: 'Bó cẩm tú cầu', price: '489,000', image: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=600&h=480&fit=crop&auto=format' },
-      { id: 9, name: 'Bó mix rực rỡ', price: '429,000', image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&h=480&fit=crop&auto=format' },
+      { id: 7, name: 'Bó hướng dương', price: '359,000', image: 'https://flowertalk.vn/wp-content/uploads/2020/11/bo-hoa-0108.jpg' },
+      { id: 8, name: 'Bó cẩm tú cầu', price: '489,000', image: 'https://hoatheomua.net/wp-content/uploads/2024/11/tu-cau-xanh-duong-bo-kieu-size-l-hoa-theo-mua-e1710163184717.jpg.webp' },
+      { id: 9, name: 'Bó mix rực rỡ', price: '429,000', image: 'https://hoatheomua.net/wp-content/uploads/2024/11/hoa-hong-do-bo-kieu-3.png.webp' },
     ],
     vases: [
-      { id: 10, name: 'Lọ lan hồ điệp', price: '799,000', image: 'https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=600&h=480&fit=crop&auto=format' },
-      { id: 11, name: 'Lọ hồng pastel', price: '599,000', image: 'https://images.unsplash.com/photo-1519689680058-c382f3270e52?w=600&h=480&fit=crop&auto=format' },
-      { id: 12, name: 'Lọ mix thanh lịch', price: '649,000', image: 'https://images.unsplash.com/photo-1509043759401-136742328bb3?w=600&h=480&fit=crop&auto=format' },
+      { id: 10, name: 'Lọ lan hồ điệp', price: '799,000', image: 'https://ironstyle.vn/uploads/images/2024/b%C3%ACnh%20ti%E1%BB%83u%20lan%20h%E1%BB%93%20%C4%91i%E1%BB%87p%20h%E1%BB%93ng%201.jpg' },
+      { id: 11, name: 'Lọ hồng pastel', price: '599,000', image: 'https://down-vn.img.susercontent.com/file/vn-11134207-7ras8-m0oie6cgptvz22' },
+      { id: 12, name: 'Lọ mix thanh lịch', price: '649,000', image: 'https://lh7-us.googleusercontent.com/myrG6gKvENHVHrD7qaKYFL-fjXMAUurv-6J9COURp8Bql2trYoGuxFTb17mVD4yCg2ymnTkSEq4uY9cHDX1XT2P9RJs9Eboo8VKxZLfVr8juV2_4ifMoDA5pyTsf2_uARQgGSSN-HnxVk2YwhoHKRDQ' },
     ],
   },
   funeral: {
     bouquets: [
-      { id: 13, name: 'Bó cúc trắng', price: '299,000', image: 'https://images.unsplash.com/photo-1521747116042-5a810fda9664?w=600&h=480&fit=crop&auto=format' },
-      { id: 14, name: 'Bó ly trắng', price: '369,000', image: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&h=480&fit=crop&auto=format' },
-      { id: 15, name: 'Bó lan trắng', price: '459,000', image: 'https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=600&h=480&fit=crop&auto=format' },
+      { id: 13, name: 'Bó cúc trắng', price: '299,000', image: 'https://img.pikbest.com/backgrounds/20241230/vibrant-bouquet-of-white-daisies-with-dark-green-stems-on-gray_11319806.jpg!w700wp' },
+      { id: 14, name: 'Bó ly trắng', price: '369,000', image: 'https://bizweb.dktcdn.net/100/375/978/products/photo-28-06-2021-16-37-14.jpg?v=1682499153923' },
+      { id: 15, name: 'Bó lan trắng', price: '459,000', image: 'https://bizweb.dktcdn.net/100/347/446/files/bo-hoa-lan-tuong-trang-dep.jpg?v=1689406225917' },
     ],
     vases: [
-      { id: 16, name: 'Lọ cúc trắng', price: '399,000', image: 'https://images.unsplash.com/photo-1521747116042-5a810fda9664?w=600&h=480&fit=crop&auto=format' },
-      { id: 17, name: 'Lọ ly trắng', price: '499,000', image: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&h=480&fit=crop&auto=format' },
-      { id: 18, name: 'Lọ sen trắng', price: '529,000', image: 'https://images.unsplash.com/photo-1457089328109-e5d9bd499191?w=600&h=480&fit=crop&auto=format' },
+      { id: 16, name: 'Lọ cúc trắng', price: '399,000', image: 'https://ironstyle.vn/uploads/images/20241/b%C3%ACnh%20hoa%20c%C3%BAc%20tr%E1%BA%AFng.jpg' },
+      { id: 17, name: 'Lọ ly trắng', price: '499,000', image: 'https://ironstyle.vn/uploads/product/wWDw_b%C3%ACnh%20hoa%20ly%20tr%E1%BA%AFng%203.jpg' },
+      { id: 18, name: 'Lọ sen trắng', price: '529,000', image: 'https://hoavaidep.info/storage/2015/11/621HN-sen-trang-dat.jpg' },
     ],
   },
   congrats: {
     bouquets: [
-      { id: 19, name: 'Bó hồng vàng', price: '339,000', image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=600&h=480&fit=crop&auto=format' },
-      { id: 20, name: 'Bó mix tươi sáng', price: '389,000', image: 'https://images.unsplash.com/photo-1526045478516-99145907023c?w=600&h=480&fit=crop&auto=format' },
-      { id: 21, name: 'Bó tulip đa sắc', price: '569,000', image: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=600&h=480&fit=crop&auto=format' },
+      { id: 19, name: 'Bó hồng vàng', price: '339,000', image: 'https://shophoahong.com/wp-content/uploads/2022/06/hv1-e1655096457165.jpg' },
+      { id: 20, name: 'Bó mix tươi sáng', price: '389,000', image: 'https://4tfloral.vn/wp-content/uploads/2024/08/bo-hoa-huong-duong-mix-hoa-hong.jpg' },
+      { id: 21, name: 'Bó tulip đa sắc', price: '569,000', image: 'https://storage.googleapis.com/cdn_dlhf_vn/public/products/WTHP/WTHPA0045/z4098522035098_cb625d59cc77650414ed388c2166aff3_800x800.jpg' },
     ],
     vases: [
-      { id: 22, name: 'Lọ mix rực rỡ', price: '649,000', image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&h=480&fit=crop&auto=format' },
-      { id: 23, name: 'Lọ hồng vàng', price: '559,000', image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=600&h=480&fit=crop&auto=format' },
-      { id: 24, name: 'Lọ tulip', price: '599,000', image: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=600&h=480&fit=crop&auto=format' },
+      { id: 22, name: 'Lọ mix rực rỡ', price: '649,000', image: 'https://storage.googleapis.com/cdn_dlhf_vn/public/products/AFFM/AFFMIXV485/IMG_9907_800x800.jpg' },
+      { id: 23, name: 'Lọ hồng vàng', price: '559,000', image: 'https://flowershanoi.com/wp-content/uploads/2018/10/DSC2702.jpg' },
+      { id: 24, name: 'Lọ tulip', price: '599,000', image: 'https://ironstyle.vn/uploads/images/20231/l%E1%BB%8D%20hoa%20tulip%20tr%E1%BA%AFng.jpg' },
     ],
   },
   birthday: {
     bouquets: [
-      { id: 25, name: 'Bó hồng pastel', price: '429,000', image: 'https://images.unsplash.com/photo-1519689680058-c382f3270e52?w=600&h=480&fit=crop&auto=format' },
-      { id: 26, name: 'Bó cẩm chướng', price: '319,000', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=480&fit=crop&auto=format' },
-      { id: 27, name: 'Bó hướng dương', price: '369,000', image: 'https://images.unsplash.com/photo-1437419764061-2473afe69fc2?w=600&h=480&fit=crop&auto=format' },
+      { id: 25, name: 'Bó hồng pastel', price: '429,000', image: 'https://hoahanoi.com.vn/wp-content/uploads/2020/09/bo-hong-pastel-e1598947025944.jpg' },
+      { id: 26, name: 'Bó cẩm chướng', price: '319,000', image: 'https://bizweb.dktcdn.net/thumb/1024x1024/100/487/411/products/z5674624093899-0c6bdc72a3a0907bc0d8cbfdd1a31409.jpg?v=1722099795807' },
+      { id: 27, name: 'Bó hướng dương', price: '369,000', image: 'https://flowertalk.vn/wp-content/uploads/2020/11/bo-hoa-0108.jpg' },
     ],
     vases: [
-      { id: 28, name: 'Lọ mix pastel', price: '579,000', image: 'https://images.unsplash.com/photo-1519689680058-c382f3270e52?w=600&h=480&fit=crop&auto=format' },
-      { id: 29, name: 'Lọ lan hồ điệp', price: '799,000', image: 'https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=600&h=480&fit=crop&auto=format' },
-      { id: 30, name: 'Lọ hồng trắng', price: '569,000', image: 'https://images.unsplash.com/photo-1521334726092-b509a19597c6?w=600&h=480&fit=crop&auto=format' },
+      { id: 28, name: 'Lọ mix pastel', price: '579,000', image: 'https://lovearts.vn/wp-content/uploads/2020/08/Gi%E1%BB%8F-hoa-500k-1.jpg' },
+      { id: 29, name: 'Lọ lan hồ điệp', price: '799,000', image: 'https://ironstyle.vn/uploads/images/2024/b%C3%ACnh%20ti%E1%BB%83u%20lan%20h%E1%BB%93%20%C4%91i%E1%BB%87p%20h%E1%BB%93ng%201.jpg' },
+      { id: 30, name: 'Lọ hồng trắng', price: '569,000', image: 'https://hoatuoi360.vn/uploads/file/hoa-hong-trang-mon-qua-dac-bi%E1%BA%B9t.jpg' },
     ],
   },
   anniversary: {
     bouquets: [
-      { id: 31, name: 'Bó hồng đỏ', price: '459,000', image: 'https://images.unsplash.com/photo-1509043759401-136742328bb3?w=600&h=480&fit=crop&auto=format' },
-      { id: 32, name: 'Bó tulip đỏ', price: '579,000', image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=600&h=480&fit=crop&auto=format' },
-      { id: 33, name: 'Bó lan sang trọng', price: '689,000', image: 'https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=600&h=480&fit=crop&auto=format' },
+      { id: 31, name: 'Bó hồng đỏ', price: '459,000', image: 'https://hoatuoidatviet.vn/thumb/600x667/1/upload/sanpham/bo-hoa-hong-do-cuc-xinh-tinh-1347.jpg' },
+      { id: 32, name: 'Bó tulip đỏ', price: '579,000', image: 'https://product.hstatic.net/200000732679/product/3_6d125a7715d84f03894c52ada4a517b3.png' },
+      { id: 33, name: 'Bó lan sang trọng', price: '689,000', image: 'https://lanhodiep.vn/wp-content/uploads/2021/10/Lanhodiep-vn-la-dia-chi-cung-cap-lan-ho-diep-cat-canh-uy-tin-nhat-tai-Ha-Noi.jpg' },
     ],
     vases: [
-      { id: 34, name: 'Lọ hồng đỏ', price: '629,000', image: 'https://images.unsplash.com/photo-1519689680058-c382f3270e52?w=600&h=480&fit=crop&auto=format' },
-      { id: 35, name: 'Lọ lan tím', price: '859,000', image: 'https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=600&h=480&fit=crop&auto=format' },
-      { id: 36, name: 'Lọ mix sang trọng', price: '799,000', image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600&h=480&fit=crop&auto=format' },
+      { id: 34, name: 'Lọ hồng đỏ', price: '629,000', image: 'https://flexdecor.vn/wp-content/uploads/2022/11/Hoa-hong-do-vai-lua-nhung-de-ban-HNT0432-1.jpg' },
+      { id: 35, name: 'Lọ lan tím', price: '859,000', image: 'https://ironstyle.vn/uploads/images/2024/b%C3%ACnh%20ti%E1%BB%83u%20lan%20h%E1%BB%93%20%C4%91i%E1%BB%87p%20h%E1%BB%93ng%201.jpg' },
+      { id: 36, name: 'Lọ mix sang trọng', price: '799,000', image: 'https://hoatuoihoamy.com/wp-content/uploads/2024/10/Thiet-ke-chua-co-ten-17.jpg' },
     ],
   },
 };
@@ -164,7 +164,7 @@ const OccasionProducts: React.FC<OccasionProductsProps> = ({ activeOccasion = 'v
               variants={cardVariants}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
-              <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
+              <img src={p.image} alt={p.name} className="w-full h-80 object-cover" />
               <div className="p-4">
                 <h3 className="font-semibold text-gray-900 mb-2">{p.name}</h3>
                 <div className="flex items-center justify-between">
