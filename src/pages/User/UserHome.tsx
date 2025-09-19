@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link as RouterLink } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
 import OccasionProducts from '../../components/OccasionProducts';
@@ -79,9 +80,9 @@ const UserHome: React.FC = () => {
                   Xem sản phẩm
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
-                <button className="border border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                  Liên hệ tư vấn
-                </button>
+                <RouterLink to="/auth/register" className="btn btn-outline">
+                  Đăng ký nhanh
+                </RouterLink>
               </div>
             </motion.div>
             <motion.div

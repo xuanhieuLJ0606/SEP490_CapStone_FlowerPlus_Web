@@ -4,25 +4,26 @@ import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AuthLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="min-h-screen w-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-10 h-screen">
           {/* Left: Form slot */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 lg:p-10">
+          <div className="bg-white p-8 lg:p-12 flex flex-col h-full lg:col-span-3 border-r border-gray-200">
             <div className="flex items-center gap-2 mb-8">
               <div className="w-8 h-8 rounded-full bg-green-600 grid place-items-center text-white font-bold">F</div>
               <span className="font-semibold text-gray-900">FlowerPlus</span>
             </div>
-            <Outlet />
+            <div className="flex-1">
+              <Outlet />
+            </div>
             <div className="mt-10 text-xs text-gray-500">
               © {new Date().getFullYear()} FlowerPlus. All rights reserved.
             </div>
           </div>
 
           {/* Right: Visual panel */}
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-900">
+          <div className="relative overflow-hidden bg-gray-900 h-full lg:col-span-7">
             <img
-              src="https://images.unsplash.com/photo-1462115502567-5ccec2b19cbb?q=80&w=1600&auto=format&fit=crop"
+              src="https://media.istockphoto.com/id/603859820/photo/flower-shop.jpg?s=612x612&w=0&k=20&c=t_cKbIYz8pISz1rSQlvG5BWwYSCtkvRNw5ugzkwM3Xo="
               alt="Blooming flowers"
               className="absolute inset-0 h-full w-full object-cover opacity-80"
             />
@@ -60,7 +61,6 @@ const AuthLayout: React.FC = () => {
             </Link>
           </div>
         </div>
-      </div>
     </div>
   );
 };

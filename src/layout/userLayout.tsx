@@ -82,9 +82,9 @@ const UserLayout: React.FC = () => {
               <button className="p-2 text-gray-700 hover:text-green-600 transition-colors">
                 <ShoppingCart className="h-6 w-6" />
               </button>
-              <button className="p-2 text-gray-700 hover:text-green-600 transition-colors">
+              <Link to="/auth/login" className="p-2 text-gray-700 hover:text-green-600 transition-colors">
                 <User className="h-6 w-6" />
-              </button>
+              </Link>
 
               {/* Mobile menu button */}
               <button
