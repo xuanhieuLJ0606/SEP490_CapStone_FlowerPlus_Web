@@ -66,7 +66,7 @@ export const useGetMyInfo = () => {
   return useQuery({
     queryKey: ['get-my-info'],
     queryFn: async () => {
-      const res = await BaseRequest.Get(`/api/user/my-profile`);
+      const res = await BaseRequest.Get(`/auth/me?includeRole=false`);
       dispatch(setInfoUser(res.data));
       return res.data;
     },

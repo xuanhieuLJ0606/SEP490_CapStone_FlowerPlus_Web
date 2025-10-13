@@ -1,5 +1,7 @@
 import __helpers from '@/helpers';
 import FloatingContactButtons from '../ui/FloatingContact';
+import Header from './header';
+import Footer from './footer';
 
 export default function DashboardLayout({
   children
@@ -7,9 +9,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-full min-h-screen  ">
-      <main className="w-full">{children}</main>
-      <FloatingContactButtons />
+    <div>
+      <Header />
+
+      <div className="h-full min-h-screen  ">
+        <main className="w-full">{children}</main>
+        <FloatingContactButtons />
+      </div>
+      <Footer />
     </div>
   );
 }

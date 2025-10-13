@@ -56,7 +56,7 @@ export default function Footer() {
             className="space-y-4"
           >
             <div>
-              <h3 className="mb-2 text-2xl font-bold text-yellow-400">
+              <h3 className="mb-2 text-2xl font-bold text-rose-500">
                 FLOWERPLUS.VN
               </h3>
               <p className="text-sm leading-relaxed text-gray-300">
@@ -68,19 +68,19 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-2">
               <div className="flex items-center gap-3 text-sm">
-                <Phone className="h-4 w-4 text-yellow-400" />
+                <Phone className="h-4 w-4 text-rose-500" />
                 <span>0909 123 456</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Mail className="h-4 w-4 text-yellow-400" />
+                <Mail className="h-4 w-4 text-rose-500" />
                 <span>info@flowerplus.vn</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <MapPin className="h-4 w-4 text-yellow-400" />
+                <MapPin className="h-4 w-4 text-rose-500" />
                 <span>123 Nguyễn Văn A, Q.1, TP.HCM</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Clock className="h-4 w-4 text-yellow-400" />
+                <Clock className="h-4 w-4 text-rose-500" />
                 <span>7:00 - 22:00 (Hàng ngày)</span>
               </div>
             </div>
@@ -94,13 +94,13 @@ export default function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h4 className="text-lg font-semibold text-yellow-400">Công ty</h4>
+            <h4 className="text-lg font-semibold text-rose-500">Công ty</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link, index) => (
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-yellow-400"
+                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -117,13 +117,13 @@ export default function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h4 className="text-lg font-semibold text-yellow-400">Dịch vụ</h4>
+            <h4 className="text-lg font-semibold text-rose-500">Dịch vụ</h4>
             <ul className="space-y-2">
               {footerLinks.services.map((link, index) => (
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-yellow-400"
+                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -140,13 +140,13 @@ export default function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h4 className="text-lg font-semibold text-yellow-400">Hỗ trợ</h4>
+            <h4 className="text-lg font-semibold text-rose-500">Hỗ trợ</h4>
             <ul className="mb-6 space-y-2">
               {footerLinks.support.map((link, index) => (
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-yellow-400"
+                    className="text-sm text-gray-300 transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -156,25 +156,25 @@ export default function Footer() {
 
             {/* Social Media */}
             <div>
-              <h5 className="mb-3 text-sm font-semibold text-yellow-400">
+              <h5 className="mb-3 text-sm font-semibold text-rose-500">
                 Theo dõi chúng tôi
               </h5>
               <div className="flex gap-3">
                 <a
                   href="#"
-                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-yellow-400 hover:text-gray-900"
+                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-rose-500 hover:text-gray-900"
                 >
                   <Facebook className="h-4 w-4" />
                 </a>
                 <a
                   href="#"
-                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-yellow-400 hover:text-gray-900"
+                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-rose-500 hover:text-gray-900"
                 >
                   <Instagram className="h-4 w-4" />
                 </a>
                 <a
                   href="#"
-                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-yellow-400 hover:text-gray-900"
+                  className="rounded-lg bg-gray-800 p-2 transition-all duration-200 hover:bg-rose-500 hover:text-gray-900"
                 >
                   <Youtube className="h-4 w-4" />
                 </a>
@@ -199,7 +199,7 @@ export default function Footer() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="rounded-lg bg-yellow-400 p-2">
+                <div className="rounded-lg bg-rose-500 p-2">
                   <feature.icon className="h-4 w-4 text-gray-900" />
                 </div>
                 <span className="text-sm font-medium">{feature.text}</span>
@@ -225,13 +225,13 @@ export default function Footer() {
             <div className="flex gap-6 text-sm">
               <a
                 href="#"
-                className="text-gray-400 transition-colors hover:text-yellow-400"
+                className="text-gray-400 transition-colors hover:text-rose-500"
               >
                 Điều khoản sử dụng
               </a>
               <a
                 href="#"
-                className="text-gray-400 transition-colors hover:text-yellow-400"
+                className="text-gray-400 transition-colors hover:text-rose-500"
               >
                 Chính sách bảo mật
               </a>

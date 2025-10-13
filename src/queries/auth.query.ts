@@ -1,12 +1,14 @@
 import BaseRequest, { BaseRequestV2 } from '@/config/axios.config';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import __helpers from '@/helpers/index';
+import { useDispatch } from 'react-redux';
+import { setInfoUser } from '@/redux/auth.slice';
 
 export const useLogin = () => {
   return useMutation({
     mutationKey: ['login'],
     mutationFn: async (model: any) => {
-      return BaseRequest.Post(`/api/auth/login`, model);
+      return BaseRequestV2.Post(`/auth/login`, model);
     }
   });
 };
@@ -17,6 +19,26 @@ export const useLoginGoogle = () => {
     mutationFn: async () => {
       return BaseRequest.Get(`/api/auth/google-login`);
     }
+  });
+};
+export const useRegister = () => {
+  return useMutation({
+    mutationKey: ['register'],
+    mutationFn: async (model: any) => {
+      return BaseRequestV2.Post(`/auth/register`, model);
+    }
+  });
+};
+export const useGetMyInfo = () => {
+  const dispatch = useDispatch();
+  return useQuery({
+    queryKey: ['get-my-info'],
+    queryFn: async () => {
+      const res = await BaseRequest.Get(`/auth/me?includeRole=false`);
+
+      dispatch(setInfoUser(res));
+    },
+    enabled: !!__helpers.cookie_get('AT')
   });
 };
 export const useInitForgotPassword = () => {
