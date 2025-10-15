@@ -38,12 +38,9 @@ import { usePathname, useRouter } from '@/routes/hooks';
 import { useAuth } from '@/routes/hooks/use.auth';
 import { Icons } from '../ui/icons';
 import __helpers from '@/helpers';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/redux/store';
 import { useGetMyInfo } from '@/queries/user.query';
-import LogoPNG from '@/assets/logo.jpg';
 export const company = {
-  name: 'LiveStock',
+  name: 'Flower Plus',
   logo: Cow
 };
 
@@ -51,17 +48,14 @@ export default function AppSidebar() {
   const { data: session } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const {} = useGetMyInfo();
-  const infoUser = useSelector((state: RootState) => state.auth.infoUser);
+  const { data: infoUser } = useGetMyInfo();
 
   const handleLogout = () => {
     __helpers.cookie_delete('AT');
     window.location.href = '/login';
   };
-  const role = __helpers.getUserRole();
-  const isCEO = role.includes('Giám Đốc');
-
-  const navItems = isCEO ? ceoNavItems : ceoNavItems;
+  console.log('infoUser', infoUser);
+  const navItems = ceoNavItems;
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -80,10 +74,7 @@ export default function AppSidebar() {
     >
       <SidebarHeader className=" py-2">
         <div className="flex items-center gap-3 py-2 text-emerald-700 dark:text-emerald-400">
-          <div>
-            {/* <company.logo className="size-5" /> */}
-            <img src={LogoPNG} alt="LiveStock Logo" className="size-8" />
-          </div>
+          <div>{/* <company.logo className="size-5" /> */}</div>
           <div className="grid flex-1 text-left leading-tight">
             <span className="truncate text-lg font-bold">{company.name}</span>
             <span className="truncate text-xs text-emerald-600/80 dark:text-emerald-400/80"></span>
@@ -213,15 +204,15 @@ export default function AppSidebar() {
                       alt={session?.user?.name || ''}
                     />
                     <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-semibold text-white">
-                      {getInitials(infoUser?.userName)}
+                      {getInitials(infoUser?.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="ml-2 grid flex-1 text-left leading-tight">
                     <span className="truncate font-semibold text-slate-800 dark:text-slate-200">
-                      {infoUser?.userName || 'admin'}
+                      {infoUser?.name || ''}
                     </span>
                     <span className="truncate text-xs text-slate-500 dark:text-slate-400">
-                      {infoUser?.email || 'admin@livesctock.com'}
+                      {infoUser?.email || ''}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4 text-slate-400" />
