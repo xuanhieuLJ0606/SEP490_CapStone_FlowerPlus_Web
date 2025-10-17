@@ -20,12 +20,14 @@ interface ProductGridProps {
   products: Product[];
   maxShowProduct: number;
   title?: string;
+  backgroundColor?: string;
 }
 
 export default function ProductGrid({
   products,
   maxShowProduct,
-  title = 'SẢN PHẨM'
+  title = 'SẢN PHẨM',
+  backgroundColor = '#fff'
 }: ProductGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const totalPages = Math.ceil(products.length / maxShowProduct);
@@ -41,17 +43,12 @@ export default function ProductGrid({
   const goToPrevPage = () => {
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
   };
-
-  // Hàm xử lý khi ấn vào icon giỏ hàng
   const handleAddToCart = (product: Product) => {
-    // TODO: Thực hiện action thêm vào giỏ hàng ở đây
-    // Ví dụ: dispatch(addToCart(product));
-    // Hiện tại chỉ log ra console
     console.log('Thêm vào giỏ hàng:', product);
   };
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className={`${backgroundColor} py-8`}>
       <div className="mx-auto max-w-7xl px-4">
         {/* Section Title */}
         <motion.div
@@ -61,7 +58,7 @@ export default function ProductGrid({
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="bg-green mx-auto w-fit rounded-sm p-3 text-center text-[13px] font-bold text-white">
+          <h2 className="mx-auto w-fit rounded-sm bg-rose-500 p-3 text-center text-[13px] font-bold text-white">
             {title}
           </h2>
         </motion.div>
@@ -97,7 +94,10 @@ export default function ProductGrid({
                 <CardContent className="flex h-full flex-col p-0">
                   {/* Product Image */}
                   <div className="relative flex-shrink-0">
-                    <div className="flex h-48 w-full items-center justify-center rounded-t-lg bg-gradient-to-br from-pink-200 to-blue-200">
+                    <div
+                      className="flex h-48 w-full cursor-pointer items-center justify-center rounded-t-lg bg-rose-50"
+                      onClick={() => (window.location.href = `/product/1`)}
+                    >
                       <span className="font-semibold text-gray-600">
                         Hình ảnh hoa
                       </span>
@@ -105,34 +105,29 @@ export default function ProductGrid({
 
                     {/* Discount Badge */}
                     <div className="absolute left-2 top-2">
-                      <Badge className="bg-green-500 text-white">
+                      <Badge className="bg-orange-500 text-white">
                         -{product.discount}%
                       </Badge>
                     </div>
-
-                    {product.label && (
-                      <div className="absolute right-2 top-2">
-                        <Badge className={`${product.labelColor} text-white`}>
-                          {product.label}
-                        </Badge>
-                      </div>
-                    )}
 
                     {/* Cart Icon Button */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute bottom-2 right-2 bg-white/80 shadow-md hover:bg-green-100"
+                      className="absolute bottom-2 right-2 bg-white/80 shadow-md hover:bg-rose-100"
                       onClick={() => handleAddToCart(product)}
                       aria-label="Thêm vào giỏ hàng"
                     >
-                      <ShoppingCart className="h-5 w-5 text-green-700" />
+                      <ShoppingCart className="h-5 w-5 text-rose-700" />
                     </Button>
                   </div>
 
                   {/* Product Info */}
                   <div className="flex flex-grow flex-col p-4">
-                    <h3 className="mb-2 line-clamp-2 flex-grow text-sm font-semibold text-green-800">
+                    <h3
+                      className="mb-2 line-clamp-2 flex-grow cursor-pointer text-sm font-semibold "
+                      onClick={() => (window.location.href = `/product/1`)}
+                    >
                       {product.name}
                     </h3>
 
@@ -142,7 +137,7 @@ export default function ProductGrid({
                           {product.originalPrice.toLocaleString('vi-VN')}₫
                         </span>
                       </div>
-                      <div className="text-lg font-bold text-green-800">
+                      <div className="text-lg font-bold text-rose-600">
                         {product.discountedPrice.toLocaleString('vi-VN')}₫
                       </div>
                     </div>
@@ -174,7 +169,7 @@ export default function ProductGrid({
                   variant={i === currentPage ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setCurrentPage(i)}
-                  className={`h-8 w-8  p-0 ${i === currentPage ? 'bg-green text-white' : ''}`}
+                  className={`h-8 w-8  p-0 ${i === currentPage ? 'bg-rose-500 text-white' : 'bg-white text-rose-500'}`}
                 >
                   {i + 1}
                 </Button>

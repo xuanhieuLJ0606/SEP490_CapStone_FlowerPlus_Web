@@ -130,10 +130,26 @@ export default function ProductSection() {
         products={products}
         maxShowProduct={5}
         title="BÓ HOA RẺ HÔM NAY"
+        backgroundColor="bg-white"
       />
-      <ProductGrid products={products} maxShowProduct={5} title="HOA HỒNG" />
-      <ProductGrid products={products} maxShowProduct={5} title="HOA LY" />
-      <ProductGrid products={products} maxShowProduct={5} title="HOA CÚC" />
+      <ProductGrid
+        products={products}
+        maxShowProduct={5}
+        title="HOA HỒNG"
+        backgroundColor="bg-[#f3e2d9]"
+      />
+      <ProductGrid
+        products={products}
+        maxShowProduct={5}
+        title="HOA LY"
+        backgroundColor="bg-white"
+      />
+      <ProductGrid
+        products={products}
+        maxShowProduct={5}
+        title="HOA CÚC"
+        backgroundColor="bg-[#f3e2d9]"
+      />
     </div>
   );
 }
