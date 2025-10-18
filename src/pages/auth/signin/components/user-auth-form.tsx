@@ -1,135 +1,88 @@
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import __helpers from '@/helpers';
-import { useLogin } from '@/queries/auth.query';
-import { useGetMyInfo } from '@/queries/user.query';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-const formSchema = z.object({
-  username: z
-    .string()
-    .min(2, { message: 'Tên đăng nhập phải có ít nhất 2 ký tự' }),
-  password: z.string().min(2, { message: 'Mật khẩu phải có ít nhất 2 ký tự' })
-});
+'use client';
 
-type UserFormValue = z.infer<typeof formSchema>;
+import type React from 'react';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Mail, Lock, Loader2 } from 'lucide-react';
+import { useLogin } from '@/queries/auth.query';
+import __helpers from '@/helpers';
 
 export default function UserAuthForm() {
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { mutateAsync: login } = useLogin();
-  const [queryError, setQueryError] = useState<string | null>(null);
-  const defaultValues = {
-    username: '',
-    password: ''
-  };
-  const { data: dataInfoUser, refetch } = useGetMyInfo();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get('error');
-    if (error) {
-      setQueryError(decodeURIComponent(error));
-    }
-  }, []);
-
-  const form = useForm<UserFormValue>({
-    resolver: zodResolver(formSchema),
-    defaultValues
-  });
-
-  useEffect(() => {
-    if (dataInfoUser) {
-      console.log(dataInfoUser);
-      window.location.href = '/dashboard';
-    }
-  }, [dataInfoUser]);
-
-  const onSubmit = async (data: UserFormValue) => {
-    setLoading(true);
-    try {
-      const model = {
-        username: data.username,
-        password: data.password
-      };
-      const res = await login(model);
-      console.log(res);
-      if (res) {
-        const token = res.data;
-        __helpers.cookie_set('AT', token);
-        refetch();
-        // window.location.href = '/';
-      }
-    } catch (err: any) {
-      form.setError('password', {
-        type: 'manual',
-        message: err?.data?.message || 'Tên đăng nhập hoặc mật khẩu không đúng'
-      });
-    } finally {
-      setLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const [err, data] = await login({ email: email, password });
+    if (!err) {
+      console.log('data', data);
+      __helpers.cookie_set('AT', data.token);
+      window.location.href = '/admin/categories';
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
-        {/* Username Field */}
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tên đăng nhập</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  placeholder="Nhập tên đăng nhập..."
-                  disabled={loading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm font-medium text-foreground">
+          Email
+        </Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="ten@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
+            required
+            disabled={isLoading}
+          />
+        </div>
+      </div>
 
-        {/* Password Field */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mật khẩu</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Nhập mật khẩu của bạn..."
-                  disabled={loading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div className="space-y-2">
+        <Label
+          htmlFor="password"
+          className="text-sm font-medium text-foreground"
+        >
+          Mật khẩu
+        </Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
+            required
+            disabled={isLoading}
+          />
+        </div>
+      </div>
 
-        {queryError && (
-          <p className="text-center text-sm text-red-500">{queryError}</p>
+      <Button
+        type="submit"
+        className="h-11 w-full bg-rose-500 font-medium text-white transition-colors hover:bg-rose-600"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Đang đăng nhập...
+          </>
+        ) : (
+          'Đăng nhập'
         )}
-
-        <Button disabled={loading} className="ml-auto w-full" type="submit">
-          Đăng nhập
-        </Button>
-      </form>
-    </Form>
+      </Button>
+    </form>
   );
 }
