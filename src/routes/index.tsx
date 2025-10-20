@@ -8,7 +8,7 @@ const DashboardLayout = lazy(
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
 const HomePage = lazy(() => import('@/pages/HomePage/index'));
-// const ProductDetailPage = lazy(() => import('@/pages/ProductPage/index'));
+const ProductDetailPage = lazy(() => import('@/pages/ProductPage/index'));
 const AdminLayout = lazy(() => import('@/components/layout/admin-layout'));
 const CategoriesPage = lazy(
   () => import('@/pages/AdminPage/CategoriesPage/index')
@@ -32,10 +32,10 @@ export default function AppRouter() {
           element: <HomePage />,
           index: true
         },
-        // {
-        //   path: '/product/:id',
-        //   element: <ProductDetailPage />
-        // }
+        {
+          path: '/product/:id',
+          element: <ProductDetailPage />
+        }
       ]
     }
   ];
