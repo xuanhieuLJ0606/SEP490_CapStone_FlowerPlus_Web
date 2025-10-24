@@ -13,14 +13,6 @@ export const useLogin = () => {
   });
 };
 
-export const useLoginGoogle = () => {
-  return useMutation({
-    mutationKey: ['login-google'],
-    mutationFn: async () => {
-      return BaseRequest.Get(`/api/auth/google-login`);
-    }
-  });
-};
 export const useRegister = () => {
   return useMutation({
     mutationKey: ['register'],
@@ -29,16 +21,27 @@ export const useRegister = () => {
     }
   });
 };
+
 export const useGetMyInfo = () => {
   const dispatch = useDispatch();
   return useQuery({
     queryKey: ['get-my-info'],
     queryFn: async () => {
-      const res = await BaseRequest.Get(`/auth/me?includeRole=false`);
-
-      dispatch(setInfoUser(res));
+      const res = await BaseRequest.Get(`/auth/me`);
+      console.log('res', res.data);
+      dispatch(setInfoUser(res.data));
+      return res.data;
     },
     enabled: !!__helpers.cookie_get('AT')
+  });
+};
+
+export const useLoginGoogle = () => {
+  return useMutation({
+    mutationKey: ['login-google'],
+    mutationFn: async () => {
+      return BaseRequest.Get(`/api/auth/google-login`);
+    }
   });
 };
 export const useInitForgotPassword = () => {

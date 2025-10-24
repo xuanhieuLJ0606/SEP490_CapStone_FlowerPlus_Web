@@ -9,10 +9,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+   <div>
       <Header />
 
-      <div className="h-full min-h-screen  ">
+      <div className="h-full min-h-[90%]">
         <main className="w-full">{children}</main>
         <FloatingContactButtons />
       </div>
