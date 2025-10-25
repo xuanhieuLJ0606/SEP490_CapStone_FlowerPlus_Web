@@ -9,13 +9,13 @@ export type Product = {
   updated_at: string;
 };
 
-export const ceoNavItems: any = [
+export const shopOwnerNavItems: any = [
   {
     label: 'Quản lý',
     detail: [
       {
         title: 'Tổng quan',
-        url: '/dashboard',
+        url: '/admin/dashboard',
         icon: 'dashboard',
         isActive: false,
         shortcut: ['d', 'd'],
@@ -24,41 +24,41 @@ export const ceoNavItems: any = [
     ]
   },
   {
-    label: 'Danh mục',
+    label: 'Bán hàng',
     detail: [
       {
-        title: 'Danh sách danh mục',
+        title: 'Giao dịch',
+        url: '/admin/payment',
+        icon: 'banknote',
+        isActive: false,
+        shortcut: ['d', 'd'],
+        items: []
+      },
+      {
+        title: 'Đơn hàng',
+        url: '/admin/orders',
+        icon: 'orders',
+        isActive: false,
+        shortcut: ['d', 'd'],
+        items: []
+      }
+    ]
+  },
+  {
+    label: 'Tài nguyên',
+    detail: [
+      {
+        title: 'Danh mục',
         url: '/admin/categories',
         icon: 'grid',
         isActive: false,
         shortcut: ['d', 'd'],
         items: []
-      }
-    ]
-  }
-];
-
-export const managerNavItems: any = [
-  {
-    label: 'Quản lý Nhập/Xuất',
-    detail: [
+      },
       {
-        title: 'Danh sách lô nhập',
-        url: '/lo-nhap',
-        icon: 'download',
-        isActive: false,
-        shortcut: ['d', 'd'],
-        items: []
-      }
-    ]
-  },
-  {
-    label: 'Thuốc/Vaccine',
-    detail: [
-      {
-        title: 'Danh sách thuốc/vaccine',
-        url: '/danh-sach-thuoc',
-        icon: 'syringe',
+        title: 'Sản phẩm',
+        url: '/admin/products',
+        icon: 'flower',
         isActive: false,
         shortcut: ['d', 'd'],
         items: []
@@ -66,69 +66,6 @@ export const managerNavItems: any = [
     ]
   }
 ];
-
-export const employeeNavItems: any = [
-  {
-    label: 'Vật nuôi',
-    detail: [
-      {
-        title: 'Danh sách vật nuôi',
-        url: '/danh-sach-vat-nuoi',
-        icon: 'dog',
-        isActive: false,
-        shortcut: ['d', 'd'],
-        items: []
-      }
-    ]
-  },
-  {
-    label: 'Bệnh dịch',
-    detail: [
-      {
-        title: 'Danh sách các loại bệnh',
-        url: '/danh-sach-benh',
-        icon: 'pill',
-        isActive: false,
-        shortcut: ['d', 'd'],
-        items: []
-      }
-    ]
-  }
-];
-
-export const AssistantNavItems: any = [
-  {
-    label: 'Vật nuôi',
-    detail: [
-      {
-        title: 'Danh sách vật nuôi',
-        url: '/danh-sach-vat-nuoi',
-        icon: 'dog',
-        isActive: false,
-        shortcut: ['d', 'd'],
-        items: []
-      }
-    ]
-  },
-  {
-    label: 'Bệnh dịch',
-    detail: [
-      {
-        title: 'Danh sách các loại bệnh',
-        url: '/danh-sach-benh',
-        icon: 'pill',
-        isActive: false,
-        shortcut: ['d', 'd'],
-        items: []
-      }
-    ]
-  }
-];
-
-export const Permission = {
-  1: 'Users.View',
-  2: 'Permission.Users.Create'
-};
 
 export const sumaryUser = {
   CEO: 5,
@@ -140,4 +77,10 @@ export const InspectionCodeRangeStatus: any = {
   1: 'Dùng hết',
   2: 'Đang sử dụng',
   3: 'Mới'
+};
+
+export const PRODUCT_TYPE = {
+  FLOWER: 'FLOWER',
+  ITEM: 'ITEM',
+  PRODUCT: 'PRODUCT'
 };

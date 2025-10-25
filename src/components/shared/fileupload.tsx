@@ -1,5 +1,4 @@
-import { AvatarIcon } from '@radix-ui/react-icons';
-import { CameraIcon } from 'lucide-react';
+import { CameraIcon, UploadIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Accept, useDropzone } from 'react-dropzone';
 
@@ -29,7 +28,7 @@ export default function FileUpload({ onChange, value }: TFileUploadProps) {
           {value && !!value.length ? (
             <ImagePreview file={value[0]} />
           ) : (
-            <AvatarIcon className="h-36 w-36 text-gray-100" />
+             <UploadIcon className="h-36 w-36 text-gray-100" />
           )}
 
           <p className="absolute -bottom-5 left-1/2 flex w-full -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center bg-gray-300 bg-opacity-50 py-1 text-xs font-normal text-muted-foreground ">
