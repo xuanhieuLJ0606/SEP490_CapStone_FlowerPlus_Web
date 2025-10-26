@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ListProduct } from '@/constants/mockData/product';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,10 +17,27 @@ import {
   ShieldCheck,
   Leaf,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  ShoppingCart
 } from 'lucide-react';
+import { useGetProductById } from '@/queries/product.query';
+import { toast } from '@/components/ui/use-toast';
+import { useAddItemToCart } from '@/queries/cart.query';
 
-type ProductChild = { id: string; name: string; value: string };
+type Composition = {
+  childId: number;
+  childName: string;
+  childType: string;
+  quantity: number;
+  childPrice: number;
+  childImage: string;
+};
+
+type Category = {
+  id: number;
+  name: string;
+};
 
 function formatVND(n: number) {
   try {
@@ -31,21 +47,74 @@ function formatVND(n: number) {
   }
 }
 
+function parseImages(imagesString: string | null | undefined): string[] {
+  if (!imagesString) return [];
+  try {
+    const parsed = JSON.parse(imagesString);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function ProductDetailPage() {
   const { id } = useParams();
   const productId = Number(id);
+  const { data: resProduct, isLoading } = useGetProductById(productId);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const product = useMemo(
-    () => ListProduct.find((p: any) => p.id === productId),
-    [productId]
-  );
+  const product = resProduct?.data || resProduct;
 
-  const related = useMemo(() => {
-    if (!product) return [] as any[];
-    return ListProduct.filter(
-      (p: any) => p.categoryId === product.categoryId && p.id !== product.id
-    ).slice(0, 8);
+  const productImages = useMemo(() => {
+    if (!product?.images) return [];
+    return parseImages(product.images);
   }, [product]);
+
+  const mainImage = productImages[selectedImageIndex] || productImages[0] || '';
+
+  const compositionsWithImages = useMemo(() => {
+    if (!product?.compositions) return [];
+    return product.compositions.map((comp: Composition) => ({
+      ...comp,
+      parsedImages: parseImages(comp.childImage)
+    }));
+  }, [product]);
+
+  const { mutateAsync: addItemToCart } = useAddItemToCart();
+
+  const handleAddToCart = async (productId: number) => {
+    const payload = {
+      productId: productId,
+      quantity: 1
+    };
+    const [error] = await addItemToCart(payload);
+
+    if (error) {
+      toast({
+        title: 'Thêm sản phẩm vào giỏ hàng thất bại',
+        description:
+          error.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    toast({
+      title: 'Thêm sản phẩm vào giỏ hàng thành công',
+      description: 'Sản phẩm đã được thêm vào giỏ hàng',
+      variant: 'success'
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -65,16 +134,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  const hasDiscount =
-    Boolean(product.originalPrice) && product.originalPrice > product.price;
-
-  const discountPercent = hasDiscount
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100
-      )
-    : 0;
-
-  const galleryImages = [product.image, product.image, product.image];
+  // Xử lý discount (nếu có originalPrice sau này)
+  const hasDiscount = false; // TODO: Thêm khi có originalPrice
+  const discountPercent = 0;
 
   return (
     <div className="container mx-auto p-4">
@@ -87,7 +149,7 @@ export default function ProductDetailPage() {
             theo đơn
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-green-50 to-white p-3">
+        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-rose-50 to-white p-3">
           <Truck className="h-5 w-5" />
           <p className="text-sm">
             <span className="font-medium">Giao nhanh 2–4 giờ</span> nội thành
@@ -106,25 +168,33 @@ export default function ProductDetailPage() {
         <div className="lg:col-span-6">
           <div className="relative">
             <div className="group aspect-square overflow-hidden rounded-xl border bg-white shadow-sm">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {mainImage ? (
+                <img
+                  src={mainImage}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted">
+                  <span className="text-muted-foreground">Không có ảnh</span>
+                </div>
+              )}
               {/* floating actions */}
               <div className="pointer-events-none absolute left-3 top-3 flex gap-2">
-                {hasDiscount ? (
+                {hasDiscount && (
                   <Badge className="pointer-events-auto bg-red-600 text-white hover:bg-red-600/90">
-                    -{discountPercent || product.discount || 0}%
+                    -{discountPercent}%
                   </Badge>
-                ) : null}
-                <Badge
-                  variant="secondary"
-                  className="pointer-events-auto gap-1"
-                >
-                  <Leaf className="h-3.5 w-3.5" />
-                  Tươi mới
-                </Badge>
+                )}
+                {product.isActive && (
+                  <Badge
+                    variant="secondary"
+                    className="pointer-events-auto gap-1"
+                  >
+                    <Leaf className="h-3.5 w-3.5" />
+                    Tươi mới
+                  </Badge>
+                )}
               </div>
               <div className="pointer-events-none absolute right-3 top-3 flex gap-2">
                 <Button
@@ -145,25 +215,33 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Thumbnails */}
-            <div className="mt-3">
-              <Carousel>
-                <CarouselContent className="-ml-2">
-                  {galleryImages.map((img, idx) => (
-                    <CarouselItem key={idx} className="basis-1/4 pl-2">
-                      <button
-                        className="block w-full overflow-hidden rounded-lg border bg-white"
-                        aria-label={`Ảnh ${idx + 1}`}
-                      >
-                        <img
-                          src={img}
-                          className="h-20 w-full object-cover transition-transform hover:scale-105"
-                        />
-                      </button>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
+            {productImages.length > 0 && (
+              <div className="mt-3">
+                <Carousel>
+                  <CarouselContent className="-ml-2">
+                    {productImages.map((img, idx) => (
+                      <CarouselItem key={idx} className="basis-1/4 pl-2">
+                        <button
+                          onClick={() => setSelectedImageIndex(idx)}
+                          className={`block w-full overflow-hidden rounded-lg border transition-all ${
+                            selectedImageIndex === idx
+                              ? 'border-primary ring-2 ring-primary'
+                              : 'bg-white'
+                          }`}
+                          aria-label={`Ảnh ${idx + 1}`}
+                        >
+                          <img
+                            src={img}
+                            alt={`${product.name} - Ảnh ${idx + 1}`}
+                            className="h-20 w-full object-cover transition-transform hover:scale-105"
+                          />
+                        </button>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+              </div>
+            )}
           </div>
         </div>
 
@@ -182,7 +260,12 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">New 100%</Badge>
+              {product.productType && (
+                <Badge variant="secondary">{product.productType}</Badge>
+              )}
+              {product.stock !== undefined && (
+                <Badge variant="outline">Còn {product.stock} sản phẩm</Badge>
+              )}
             </div>
           </div>
 
@@ -194,7 +277,7 @@ export default function ProductDetailPage() {
                   {formatVND(product.originalPrice)} ₫
                 </span>
               )}
-              <span className="text-3xl font-extrabold tracking-tight text-green-600">
+              <span className="text-3xl font-extrabold tracking-tight text-rose-600">
                 {formatVND(product.price)} ₫
               </span>
               {hasDiscount && (
@@ -215,34 +298,69 @@ export default function ProductDetailPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
                 <div>
-                  <div className="text-muted-foreground">Thương hiệu</div>
-                  <div className="font-medium">Tổng hợp</div>
-                </div>
-                <div>
                   <div className="text-muted-foreground">Tình trạng</div>
-                  <div className="font-medium">Cắm mới trong ngày</div>
+                  <div className="font-medium">
+                    {product.isActive ? 'Đang bán' : 'Tạm ngưng'}
+                  </div>
                 </div>
-                <div>
-                  <div className="text-muted-foreground">Danh mục</div>
-                  <div className="font-medium">#{product.categoryId}</div>
-                </div>
+                {product.stock !== undefined && (
+                  <div>
+                    <div className="text-muted-foreground">Tồn kho</div>
+                    <div className="font-medium">{product.stock} sản phẩm</div>
+                  </div>
+                )}
+                {product.categories && product.categories.length > 0 && (
+                  <div>
+                    <div className="text-muted-foreground">Danh mục</div>
+                    <div className="font-medium">
+                      {product.categories
+                        .map((cat: Category) => cat.name)
+                        .join(', ')}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Attributes */}
-          {Array.isArray(product.children) && product.children.length > 0 && (
+          {/* Compositions */}
+          {compositionsWithImages.length > 0 && (
             <div>
-              <h3 className="mb-2 font-medium">Thành phần / Thuộc tính</h3>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {product.children.map((c: ProductChild) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between rounded-lg border bg-white/60 p-2 text-sm"
-                  >
-                    <span className="text-muted-foreground">{c.name}</span>
-                    <span className="font-medium">{c.value}</span>
-                  </div>
+              <h3 className="mb-2 font-medium">Thành phần sản phẩm</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {compositionsWithImages.map((comp: any, idx: number) => (
+                  <Card key={idx} className="overflow-hidden">
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-3">
+                        {comp.parsedImages && comp.parsedImages.length > 0 && (
+                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border">
+                            <img
+                              src={comp.parsedImages[0]}
+                              alt={comp.childName}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">
+                                {comp.childName}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {comp.childType} • Số lượng: {comp.quantity}
+                              </div>
+                            </div>
+                            {comp.childPrice && (
+                              <div className="text-sm font-semibold text-rose-600">
+                                {formatVND(comp.childPrice)} ₫
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -250,15 +368,20 @@ export default function ProductDetailPage() {
 
           {/* CTA */}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" className="h-12 flex-1 text-base">
-              Gửi yêu cầu tư vấn
+            <Button
+              size="lg"
+              className="flex h-12 flex-1 items-center gap-2 bg-rose-500 text-base"
+              onClick={() => handleAddToCart(product.id)}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              Thêm vào giỏ hàng
             </Button>
             <Button
               size="lg"
               variant="secondary"
               className="h-12 flex-1 text-base"
             >
-              Đặt nhanh qua Zalo
+              Mua ngay
             </Button>
           </div>
         </div>
@@ -272,7 +395,11 @@ export default function ProductDetailPage() {
           <TabsTrigger value="shipping">Giao/nhận</TabsTrigger>
         </TabsList>
         <TabsContent value="desc" className="prose max-w-none">
-          <p>{product.description}</p>
+          {product.description ? (
+            <p>{product.description}</p>
+          ) : (
+            <p className="text-muted-foreground">Chưa có mô tả sản phẩm.</p>
+          )}
           <ul className="mt-2 list-disc pl-6 text-sm text-muted-foreground">
             <li>Thiết kế phối màu tinh tế, phù hợp nhiều dịp tặng.</li>
             <li>Hoa tuyển chọn, độ nở đẹp, cắm theo layout mẫu.</li>
@@ -307,68 +434,7 @@ export default function ProductDetailPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Related */}
-      {related.length > 0 && (
-        <div className="mt-10">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Có thể bạn sẽ thích</h3>
-            <Link to="/" className="text-sm text-primary hover:underline">
-              Xem thêm
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {related.map((item: any) => {
-              const itemHasDiscount =
-                Boolean(item.originalPrice) && item.originalPrice > item.price;
-              return (
-                <Link
-                  key={item.id}
-                  to={`/product/${item.id}`}
-                  className="group"
-                >
-                  <Card className="overflow-hidden transition-all hover:shadow-lg">
-                    <CardContent className="p-0">
-                      <div className="relative aspect-square overflow-hidden">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        {itemHasDiscount ? (
-                          <Badge className="absolute left-2 top-2 bg-red-600 text-white">
-                            -
-                            {Math.round(
-                              ((item.originalPrice - item.price) /
-                                item.originalPrice) *
-                                100
-                            )}
-                            %
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <div className="space-y-1 p-3">
-                        <div className="line-clamp-2 text-sm font-medium">
-                          {item.name}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {itemHasDiscount ? (
-                            <span className="text-xs text-muted-foreground line-through">
-                              {formatVND(item.originalPrice)} ₫
-                            </span>
-                          ) : null}
-                          <span className="text-sm font-semibold text-red-600">
-                            {formatVND(item.price)} ₫
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Related - TODO: Thêm khi có API related products */}
     </div>
   );
 }

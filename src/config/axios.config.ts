@@ -3,8 +3,8 @@ import helpers from '../helpers';
 
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://lms.autopass.blog/'
-    : 'https://flower.autopass.blog/api/';
+    ? 'https://flower.autopass.blog/'
+    : 'http://localhost:8081/api/';
 
 const onRequestSuccess = (config: any) => {
   config.headers['Authorization'] = `Bearer ${helpers.cookie_get('AT')}`;
@@ -64,20 +64,20 @@ var BaseRequest = {
   Patch: async <T = any, D = any>(url: string, data?: D) => {
     try {
       const response: any = await axios.patch<T>(url, data);
-      return response;
-    } catch (err) {
+      return [null, response.data ?? null];
+    } catch (err: any) {
       console.error('PATCH Error:', err);
-      throw err;
+      return [err?.response || err, null];
     }
   },
 
   Delete: async <T = any>(url: string) => {
     try {
-      const response: AxiosResponse<T> = await axios.delete<T>(url);
-      return response;
-    } catch (err) {
+      const res: any = await axios.delete(url);
+      return [null, res.data ?? null];
+    } catch (err: any) {
       console.error('DELETE Error:', err);
-      throw err;
+      return [err?.response || err, null];
     }
   }
 };

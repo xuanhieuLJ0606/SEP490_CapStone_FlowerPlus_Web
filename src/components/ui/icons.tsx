@@ -41,13 +41,19 @@ import {
   ShieldCheck,
   Grid3X3,
   StretchHorizontal,
-  BarChart
+  BarChart,
+  Flower,
+  BaggageClaim,
+  BanknoteIcon
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
 
 export const Icons = {
   dashboard: LayoutDashboardIcon, // Trang chủ, Tổng quan
+  orders: BaggageClaim, // Đơn hàng
+  banknote: BanknoteIcon, // Đơn thanh toán
+  flower: Flower, // Hoa
   syringe: Syringe, // Tiêm chủng
   dog: Dog, // Vật nuôi
   pill: Pill, // Bệnh dịch
