@@ -1,19 +1,12 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { CellAction } from './cell-action';
-import __helpers from '@/helpers';
 import { useSearchParams } from 'react-router-dom';
-
-// const StudentPaperStatus = {
-//   UPLOADED: 0,
-//   WAITING: 1,
-//   DONE: 2
-// };
+import { CellAction } from './cell-action';
 
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: 'STT',
     header: 'STT',
-    enableSorting: true,
+    enableSorting: false,
     cell: ({ row }) => {
       const [searchParams] = useSearchParams();
       const pageLimit = Number(searchParams.get('limit') || 10);
@@ -23,21 +16,18 @@ export const columns: ColumnDef<any>[] = [
       return <span>{serialNumber}</span>;
     }
   },
+  { accessorKey: 'name', header: 'Tên', enableSorting: true },
+  { accessorKey: 'quality', header: 'Chất lượng', enableSorting: true },
+  { accessorKey: 'season', header: 'Mùa', enableSorting: true },
   {
-    accessorKey: 'name',
-    header: 'Tên sản phẩm',
-    enableSorting: true
+    accessorKey: 'price',
+    header: 'Giá',
+    enableSorting: true,
+    cell: ({ row }) => (
+      <span>{Number(row.original.price).toLocaleString()} đ</span>
+    )
   },
-
-  {
-    accessorKey: 'parentName',
-    header: 'Danh mục cha',
-    enableSorting: false,
-    cell: ({ row }) => {
-      return <span>{row.original.parentName || 'Không'}</span>;
-    }
-  },
-
+  { accessorKey: 'status', header: 'Trạng thái', enableSorting: false },
   {
     id: 'actions',
     header: 'Hành động',

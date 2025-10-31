@@ -1,29 +1,29 @@
-import BasePages from '@/components/shared/base-pages.js';
-import { OverViewTab } from './components/overview/index.js';
+import BasePages from '@/components/shared/base-pages';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Add from './components/add/index.js';
-import __helpers from '@/helpers/index.js';
-export default function PlanPage() {
+import { OverViewTab } from './list/overview';
+import { AddItemForm } from './list/add-form';
+
+export default function ItemsPage() {
   return (
     <>
       <BasePages
         className="relative flex-1 space-y-4 overflow-y-auto  px-4"
-        pageHead="Quản lý plan"
+        pageHead="Quản lý Items"
         breadcrumbs={[
           { title: 'Trang chủ', link: '/' },
-          { title: 'Quản lý danh mục', link: '/exam-pe' }
+          { title: 'Quản lý Items', link: '/admin/items' }
         ]}
       >
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="overview">Danh sách danh mục</TabsTrigger>
-            <TabsTrigger value="add">Thêm danh mục</TabsTrigger>
+            <TabsTrigger value="overview">Danh sách</TabsTrigger>
+            <TabsTrigger value="add">Thêm mới</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <OverViewTab />
           </TabsContent>
           <TabsContent value="add" className="space-y-4">
-            <Add />
+            <AddItemForm />
           </TabsContent>
         </Tabs>
       </BasePages>

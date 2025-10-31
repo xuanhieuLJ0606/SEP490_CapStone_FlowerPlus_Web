@@ -1,8 +1,9 @@
 import { useSearchParams } from 'react-router-dom';
 import ListData from '../../list-data';
 import { DataTableSkeleton } from '@/components/shared/data-table-skeleton';
-import { useGetCategories } from '@/queries/categories.query';
+
 import React from 'react';
+import { useGetTransactions } from '@/queries/transaction.query';
 
 function flattenCategories(data: any[]) {
   const idToNameMap = new Map<number, string>();
@@ -40,7 +41,7 @@ export function OverViewTab() {
   const page = Number(searchParams.get('page') || 1);
   const pageLimit = Number(searchParams.get('limit') || 10);
 
-  const { data: res, isPending } = useGetCategories();
+  const { data: res, isPending } = useGetTransactions();
 
   const { pagedData, totalRecords, pageCount } = React.useMemo(() => {
     if (!res?.data || !Array.isArray(res.data)) {
@@ -65,7 +66,7 @@ export function OverViewTab() {
   return (
     <>
       <div className="grid gap-6 rounded-md p-4 pt-0 ">
-        <h1 className="text-center font-bold">DANH SÁCH DANH MỤC</h1>
+        <h1 className="text-center font-bold">DANH SÁCH GIAO DỊCH</h1>
         {isPending ? (
           <div className="p-5">
             <DataTableSkeleton
