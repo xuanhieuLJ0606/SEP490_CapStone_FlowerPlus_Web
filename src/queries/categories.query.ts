@@ -5,7 +5,7 @@ export const useGetCategories = () => {
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await BaseRequest.Get('/categories/search?page=1&size=50');
+      const res = await BaseRequest.Get('/categories/tree');
       return res;
     }
   });
