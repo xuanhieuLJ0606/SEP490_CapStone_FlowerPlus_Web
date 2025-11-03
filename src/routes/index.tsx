@@ -13,7 +13,16 @@ const AdminLayout = lazy(() => import('@/components/layout/admin-layout'));
 const CategoriesPage = lazy(
   () => import('@/pages/AdminPage/CategoriesPage/index')
 );
-
+const ItemsPage = lazy(() => import('@/pages/AdminPage/ItemsPage/index'));
+const FlowersPage = lazy(() => import('@/pages/AdminPage/FlowersPage/index'));
+const ProductsPage = lazy(() => import('@/pages/AdminPage/ProductsPage/index'));
+const ListProduct = lazy(() => import('@/pages/ListProduct/index'));
+const DashboardPage = lazy(() => import('@/pages/AdminPage/Dashboard/index'));
+const OrderPage = lazy(() => import('@/pages/AdminPage/OrderPage/index'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage/index'));
+const TransactionPage = lazy(
+  () => import('@/pages/AdminPage/TransactionPage/index')
+);
 // ----------------------------------------------------------------------
 
 export default function AppRouter() {
@@ -35,6 +44,14 @@ export default function AppRouter() {
         {
           path: '/product/:id',
           element: <ProductDetailPage />
+        },
+        {
+          path: '/products/:categoryId',
+          element: <ListProduct />
+        },
+        {
+          path: '/profile',
+          element: <ProfilePage />
         }
       ]
     }
@@ -51,8 +68,36 @@ export default function AppRouter() {
       ),
       children: [
         {
+          path: '/admin/dashboard',
+          element: <DashboardPage />
+        },
+        {
           path: '/admin/categories',
           element: <CategoriesPage />
+        },
+        {
+          path: '/admin/items',
+          element: <ItemsPage />
+        },
+        {
+          path: '/admin/flowers',
+          element: <FlowersPage />
+        },
+        {
+          path: '/admin/products',
+          element: <ProductsPage />
+        },
+        {
+          path: '/admin/orders',
+          element: <OrderPage />
+        },
+        {
+          path: '/admin/payment',
+          element: <TransactionPage />
+        },
+        {
+          path: '/admin/profile',
+          element: <ProfilePage />
         }
       ]
     }
@@ -60,7 +105,7 @@ export default function AppRouter() {
 
   const publicRoutes = [
     {
-      path: '/admin/login',
+      path: '/manager/login',
       element: <SignInPage />,
       index: true
     },
