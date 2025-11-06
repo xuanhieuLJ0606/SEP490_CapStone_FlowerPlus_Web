@@ -3,7 +3,8 @@ import {
   ChevronDown,
   LogIn,
   User,
-  HelpCircle
+  HelpCircle,
+  Flower
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -31,6 +32,7 @@ import {
 import CartDrawer from '@/components/layout/CartDrawer';
 import { toast } from '../ui/use-toast';
 import { useCheckout } from '@/queries/checkout.query';
+import CheckoutModal from '@/pages/Checkout/components/Checkoutmodal';
 
 const promoItems = [
   'Book Your Custom Floral Design',
@@ -41,13 +43,14 @@ const promoItems = [
 export default function Header() {
   const [openAuth, setOpenAuth] = useState(false);
   const [openCart, setOpenCart] = useState(false);
+  const [openCheckout, setOpenCheckout] = useState(false);
   const { data: infoUser } = useGetMyInfo();
   const controls = useAnimationControls();
   const prefersReducedMotion = useReducedMotion();
   const { data: resCategories } = useGetCategories();
   const { data: resCart } = useGetCart();
   const cart = resCart?.data || [];
-
+  const userAddress = infoUser?.deliveryAddresses || [];
   const cartItems = cart?.items || [];
   const cartQty =
     cartItems?.reduce((sum: number, item: { quantity: number }) => {
@@ -65,6 +68,7 @@ export default function Header() {
       });
     }
   }, [controls, prefersReducedMotion]);
+
   const { mutate: addItem } = useAddItemToCart();
   const { mutateAsync: updateItem } = useUpdateItem();
   const { mutate: removeItem } = useRemoveItemInCart();
@@ -81,6 +85,7 @@ export default function Header() {
       updateItem({ id: itemId, quantity: quantity, productId: productId });
     }
   };
+
   const handleRemoveItem = async (itemId: number, productId: number) => {
     await removeItem({ id: itemId });
     toast({
@@ -89,10 +94,18 @@ export default function Header() {
       variant: 'success'
     });
   };
+
   const { mutateAsync: checkout, isPending } = useCheckout();
 
-  const handleCheckout = async () => {
-    const [err, data] = await checkout();
+  // Handle opening checkout modal from cart
+  const handleProceedToCheckout = () => {
+    setOpenCart(false);
+    setOpenCheckout(true);
+  };
+
+  // Handle final checkout with shipping info
+  const handleCheckout = async (checkoutData: any) => {
+    const [err, data] = await checkout(checkoutData);
 
     if (err) {
       toast({
@@ -109,8 +122,7 @@ export default function Header() {
       });
       console.log('data', data);
       window.open(data.checkoutUrl, '_blank');
-
-      setOpenCart(false);
+      setOpenCheckout(false);
     }
   };
 
@@ -217,6 +229,15 @@ export default function Header() {
                 ) : (
                   <>
                     <Button
+                      variant="outline"
+                      className="relative mr-1 flex items-center gap-2 bg-rose-500 text-white hover:bg-rose-600"
+                      aria-label="Giỏ hàng"
+                      onClick={() => router.push('/custom-product')}
+                    >
+                      <Flower className="h-4 w-4" />
+                      Hoa custom
+                    </Button>
+                    <Button
                       variant="ghost"
                       size="icon"
                       className="relative mr-3 h-8 w-8"
@@ -301,6 +322,16 @@ export default function Header() {
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
+        onCheckout={handleProceedToCheckout}
+        isPending={false}
+      />
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={openCheckout}
+        onClose={() => setOpenCheckout(false)}
+        cartItems={cartItems}
+        userAddresses={userAddress}
         onCheckout={handleCheckout}
         isPending={isPending}
       />

@@ -95,13 +95,13 @@ export const PersonalInfo = ({
             }`}
           >
             <div
-              className={`h-2 w-2 rounded-full ${userData.active ? 'bg-emerald-500' : 'bg-red-500'}`}
+              className={`h-2 w-2 rounded-full ${userData?.active ? 'bg-emerald-500' : 'bg-red-500'}`}
             ></div>
-            {userData.active ? 'Hoạt động' : 'Không hoạt động'}
+            {userData?.active ? 'Hoạt động' : 'Không hoạt động'}
           </span>
           <span className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-1.5 text-sm font-semibold text-rose-700">
             <UserCircle className="h-4 w-4" />
-            {getRoleLabel(userData.role)}
+            {getRoleLabel(userData?.role)}
           </span>
         </div>
 
@@ -121,7 +121,7 @@ export const PersonalInfo = ({
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
               />
             ) : (
-              <p className="text-base text-gray-900">{userData.firstName}</p>
+              <p className="text-base text-gray-900">{userData?.firstName}</p>
             )}
           </div>
 
@@ -140,7 +140,7 @@ export const PersonalInfo = ({
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
               />
             ) : (
-              <p className="text-base text-gray-900">{userData.lastName}</p>
+              <p className="text-base text-gray-900">{userData?.lastName}</p>
             )}
           </div>
 
@@ -149,7 +149,7 @@ export const PersonalInfo = ({
               <User className="h-4 w-4 text-rose-600" />
               Tên đăng nhập
             </label>
-            <p className="text-base text-gray-900">{userData.userName}</p>
+            <p className="text-base text-gray-900">{userData?.userName}</p>
           </div>
 
           <div>
@@ -168,7 +168,7 @@ export const PersonalInfo = ({
               />
             ) : (
               <p className="text-base text-gray-900">
-                {formatDate(userData.birthDate)}
+                {formatDate(userData?.birthDate)}
               </p>
             )}
           </div>
@@ -190,7 +190,7 @@ export const PersonalInfo = ({
               />
             ) : (
               <p className="text-base text-gray-900">
-                {userData.phone || 'Chưa cập nhật'}
+                {userData?.phone || 'Chưa cập nhật'}
               </p>
             )}
           </div>
@@ -210,7 +210,7 @@ export const PersonalInfo = ({
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
               />
             ) : (
-              <p className="text-base text-gray-900">{userData.email}</p>
+              <p className="text-base text-gray-900">{userData?.email}</p>
             )}
           </div>
 
@@ -233,7 +233,7 @@ export const PersonalInfo = ({
               </select>
             ) : (
               <p className="text-base text-gray-900">
-                {getGenderLabel(userData.gender)}
+                {getGenderLabel(userData?.gender)}
               </p>
             )}
           </div>
@@ -244,7 +244,7 @@ export const PersonalInfo = ({
               Ngày tạo tài khoản
             </label>
             <p className="text-base text-gray-900">
-              {formatDate(userData.createdAt)}
+              {formatDate(userData?.createdAt)}
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { User, Package, MapPin, Tag } from 'lucide-react';
 import OrderHistoryProfile from './Order';
 import { PersonalInfo } from './PersonalInfo';
 import { useGetMyInfo } from '@/queries/auth.query';
+import Address from './Address';
 
 const PlaceholderContent = ({ title }) => (
   <div className="space-y-6">
@@ -32,7 +33,7 @@ const ProfilePage = () => {
       case 'orders':
         return <OrderHistoryProfile />;
       case 'address':
-        return <PlaceholderContent title="Địa chỉ" />;
+        return <Address />;
       case 'vouchers':
         return <PlaceholderContent title="Mã giảm giá" />;
       case 'favorites':
@@ -59,13 +60,13 @@ const ProfilePage = () => {
               <div className="mb-6 flex flex-col items-center">
                 <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-red-800 to-red-900 text-4xl font-bold text-white shadow-lg">
                   <img
-                    src={userData.avatar}
+                    src={userData?.avatar}
                     alt="avatar"
                     className="h-full w-full rounded-full object-cover"
                   />
                 </div>
                 <h3 className="text-center text-xl font-bold text-gray-900">
-                  {userData.firstName} {userData.lastName}
+                  {userData?.firstName} {userData?.lastName}
                 </h3>
               </div>
 

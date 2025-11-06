@@ -1,5 +1,5 @@
 import BaseRequest from '@/config/axios.config';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useGetListProductByPaging = (
   page: number,
@@ -41,6 +41,27 @@ export const useGetProductById = (id: number) => {
     queryKey: ['get-product-by-id', id],
     queryFn: async () => {
       const res = await BaseRequest.Get(`/products/get-product-by-id?id=${id}`);
+      return res.data;
+    }
+  });
+};
+
+export const useGetProductByIdMutation = () => {
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await BaseRequest.Get(`/products/get-product-by-id?id=${id}`);
+      return res.data;
+    }
+  });
+};
+
+export const useGetProductCustomByPaging = (page: number, size: number) => {
+  return useQuery({
+    queryKey: ['get-product-custom-by-paging', page, size],
+    queryFn: async () => {
+      const res = await BaseRequest.Get(
+        `/products/get-list-product-by-user?type=PRODUCT&active=true&pageNumber=${page}&pageSize=${size}&custom=true`
+      );
       return res.data;
     }
   });
