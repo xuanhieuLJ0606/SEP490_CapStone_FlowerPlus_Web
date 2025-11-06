@@ -1,5 +1,5 @@
 import BaseRequest, { BaseRequestV2 } from '@/config/axios.config';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import __helpers from '@/helpers/index';
 import { useDispatch } from 'react-redux';
 import { setInfoUser } from '@/redux/auth.slice';
@@ -28,7 +28,6 @@ export const useGetMyInfo = () => {
     queryKey: ['get-my-info'],
     queryFn: async () => {
       const res = await BaseRequest.Get(`/auth/me`);
-      console.log('res', res.data);
       dispatch(setInfoUser(res.data));
       return res.data;
     },
@@ -76,6 +75,19 @@ export const useCompletedChangePassword = () => {
     mutationKey: ['completed-change-password'],
     mutationFn: async (model: any) => {
       return BaseRequestV2.Post(`/api/user/change-password/complete`, model);
+    }
+  });
+};
+
+export const useCreateUpdateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['create-update-address'],
+    mutationFn: async (model: any) => {
+      return BaseRequestV2.Post(`/auth/create-update-address`, model);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get-my-info'] });
     }
   });
 };
