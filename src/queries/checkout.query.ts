@@ -5,8 +5,8 @@ export const useCheckout = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['checkout'],
-    mutationFn: async () => {
-      return BaseRequest.Post('/orders/checkout');
+    mutationFn: async (data) => {
+      return BaseRequest.Post('/orders/checkout', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['get-cart'] });

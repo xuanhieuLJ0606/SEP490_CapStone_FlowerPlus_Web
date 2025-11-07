@@ -1,4 +1,4 @@
-import { X, Trash2, Plus, Minus, ShoppingBag, Loader2 } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CartItem {
@@ -219,14 +219,7 @@ export default function CartDrawer({
                     className="flex-1 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-3 font-semibold text-white shadow-lg transition-all hover:from-pink-700 hover:to-rose-700 hover:shadow-xl"
                     disabled={isPending}
                   >
-                    {isPending ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Đang tạo
-                        đơn...
-                      </div>
-                    ) : (
-                      <>Đặt hàng</>
-                    )}
+                    Đặt hàng
                   </button>
                 </div>
               </div>
