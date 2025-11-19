@@ -10,29 +10,73 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import { useAddTransactionToOrder } from '@/queries/order.query';
+import {
+  useAddTransactionToOrder,
+  useUpdateDeliveryStatus
+} from '@/queries/order.query';
 import { useGetProductByIdMutation } from '@/queries/product.query';
-import { PackageCheck, Trash2Icon } from 'lucide-react';
-import React, { useState } from 'react';
+import { Edit, PackageCheck } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
 import { ProductDetailDialog } from './ProductDetailDialog';
+import UploadImage from '@/components/shared/upload-image';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CellActionProps {
   data: any;
 }
 
+const deliveryStepMap: Record<string, string> = {
+  PENDING_CONFIRMATION: 'Chờ xác nhận',
+  PREPARING: 'Đang chuẩn bị',
+  DELIVERING: 'Đang giao',
+  DELIVERED: 'Giao thành công',
+  DELIVERY_FAILED: 'Giao thất bại'
+};
+
+// Các bước được phép chuyển tiếp từ mỗi trạng thái hiện tại
+const deliveryStepTransitions: Record<string, string[]> = {
+  PENDING_CONFIRMATION: [
+    'PREPARING',
+    'DELIVERING',
+    'DELIVERED',
+    'DELIVERY_FAILED'
+  ],
+  PREPARING: ['DELIVERING', 'DELIVERED', 'DELIVERY_FAILED'],
+  DELIVERING: ['DELIVERED', 'DELIVERY_FAILED'],
+  DELIVERED: [], // đã giao thành công => không cho cập nhật nữa
+  DELIVERY_FAILED: [] // thất bại => tuỳ logic, tạm không cho cập nhật nữa
+};
+
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openProductDialog, setOpenProductDialog] = useState(false);
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [finalAmount, setFinalAmount] = useState<string>('');
+
+  // Delivery status update states
+  const [deliveryStep, setDeliveryStep] = useState<string>('');
+  const [deliveryNote, setDeliveryNote] = useState<string>('');
+  const [deliveryLocation, setDeliveryLocation] = useState<string>('');
+  const [deliveryImageUrl, setDeliveryImageUrl] = useState<string>('');
+
   const { mutateAsync: addTransactionToOrder, isPending } =
     useAddTransactionToOrder();
+  const {
+    mutateAsync: updateDeliveryStatus,
+    isPending: isUpdatingDeliveryStatus
+  } = useUpdateDeliveryStatus();
   const { mutateAsync: getProductById } = useGetProductByIdMutation();
 
   const handleGetProductById = async (id: number) => {
     const res = await getProductById(id);
-    console.log('data', res);
-
     setSelectedProduct(res);
     setOpenProductDialog(true);
   };
@@ -48,13 +92,22 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     }
 
     try {
-      await addTransactionToOrder({
+      const [err] = await addTransactionToOrder({
+        orderId: data.id,
         amount: parseFloat(finalAmount)
       });
+      if (err) {
+        toast({
+          title: 'Lỗi',
+          description: err.message || 'Có lỗi xảy ra khi chốt đơn',
+          variant: 'destructive'
+        });
+        return;
+      }
 
       toast({
         title: 'Thành công',
-        description: 'Đã chốt đơn hàng thành công'
+        description: 'Đã tạo đơn thanh toán thành công'
       });
 
       setOpenDialog(false);
@@ -75,27 +128,122 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     }).format(amount);
   };
 
+  const handleDeliveryImageChange = useCallback((urls: string | string[]) => {
+    const imageUrl = typeof urls === 'string' ? urls : urls[0] || '';
+    setDeliveryImageUrl(imageUrl);
+  }, []);
+
+  // ========= LOGIC TÍNH STEP HIỆN TẠI & CÁC STEP HỢP LỆ =========
+  const deliveryStatuses = data.deliveryStatuses || [];
+
+  // Lấy step hiện tại = bản ghi có eventAt mới nhất
+  const currentDeliveryStep: string | null = React.useMemo(() => {
+    if (!deliveryStatuses.length) return null;
+
+    const latest = deliveryStatuses.reduce((prev: any, curr: any) => {
+      return new Date(prev.eventAt) > new Date(curr.eventAt) ? prev : curr;
+    });
+
+    return latest.step as string;
+  }, [deliveryStatuses]);
+
+  // Những step được phép chọn tiếp theo
+  const allowedNextSteps: string[] = React.useMemo(() => {
+    if (!currentDeliveryStep) {
+      // Nếu chưa có status nào, tuỳ bạn: cho phép tất cả
+      return Object.keys(deliveryStepMap);
+    }
+    return deliveryStepTransitions[currentDeliveryStep] || [];
+  }, [currentDeliveryStep]);
+
+  const handleUpdateDeliveryStatus = async () => {
+    if (!deliveryStep) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng chọn trạng thái giao hàng',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Nếu user cố tình hack chọn step không hợp lệ (ví dụ qua devtool)
+    if (currentDeliveryStep && !allowedNextSteps.includes(deliveryStep)) {
+      toast({
+        title: 'Lỗi',
+        description:
+          'Trạng thái này không hợp lệ với trạng thái hiện tại của đơn hàng',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        step: deliveryStep,
+        note: deliveryNote,
+        location: deliveryLocation,
+        imageUrl: deliveryImageUrl,
+        order_id: data.id
+      };
+
+      const [err] = await updateDeliveryStatus({
+        orderId: data.id,
+        ...payload
+      });
+
+      if (err) {
+        toast({
+          title: 'Lỗi',
+          description: err.message || 'Có lỗi xảy ra khi cập nhật trạng thái',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Thành công',
+        description: 'Đã cập nhật trạng thái giao hàng thành công'
+      });
+
+      setOpenDeliveryDialog(false);
+      // Reset form
+      setDeliveryStep('');
+      setDeliveryNote('');
+      setDeliveryLocation('');
+      setDeliveryImageUrl('');
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra khi cập nhật trạng thái',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return (
     <>
       <div className="flex items-center gap-2">
         <Button
-          className="flex items-center gap-2 bg-rose-500 text-white hover:bg-rose-600"
+          className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700"
           size="icon"
           type="button"
+          disabled={data.transaction == null}
+          onClick={() => setOpenDeliveryDialog(true)}
+        >
+          <Edit className="size-4" />
+        </Button>
+        <Button
+          className="flex items-center gap-2 bg-orange-500 text-white hover:bg-orange-600"
+          size="icon"
+          type="button"
+          disabled={data.transaction != null}
           onClick={() => setOpenDialog(true)}
         >
           <PackageCheck className="size-4" />
         </Button>
-
-        <Button
-          className="flex items-center gap-2 bg-red-500 text-white hover:bg-red-600"
-          size="icon"
-          type="button"
-        >
-          <Trash2Icon className="size-4" />
-        </Button>
       </div>
 
+      {/* Dialog chốt đơn / tạo transaction */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
@@ -156,7 +304,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               <h3 className="mb-3 text-lg font-semibold text-rose-700">
                 Sản phẩm
               </h3>
-              {data.items.map((item: any, index: number) => (
+              {data.items.map((item: any) => (
                 <div
                   key={item.id}
                   className="flex gap-3 rounded-lg border border-rose-200 bg-white p-3 last:border-b-0"
@@ -182,16 +330,17 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               ))}
             </div>
 
-            {/* Trạng thái giao hàng */}
+            {/* Trạng thái giao hàng hiện tại */}
             <div className="space-y-2 rounded-lg border-2 border-rose-100 bg-rose-50/30 p-4">
               <h3 className="mb-3 text-lg font-semibold text-rose-700">
                 Trạng thái
               </h3>
               <div className="text-sm">
                 <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-amber-800">
-                  {data.deliveryStatuses[0]?.step === 'PENDING_CONFIRMATION'
-                    ? 'Chờ xác nhận'
-                    : data.deliveryStatuses[0]?.step}
+                  {currentDeliveryStep
+                    ? deliveryStepMap[currentDeliveryStep] ||
+                      currentDeliveryStep
+                    : 'Chưa có trạng thái'}
                 </span>
               </div>
             </div>
@@ -252,6 +401,125 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onOpenChange={setOpenProductDialog}
         product={selectedProduct}
       />
+
+      {/* Update Delivery Status Dialog */}
+      <Dialog open={openDeliveryDialog} onOpenChange={setOpenDeliveryDialog}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-green-700">
+              Cập nhật trạng thái giao hàng #{data.orderCode}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Trạng thái giao hàng */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryStep" className="text-base font-semibold">
+                Trạng thái giao hàng <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={deliveryStep}
+                onValueChange={setDeliveryStep}
+                disabled={allowedNextSteps.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      allowedNextSteps.length === 0
+                        ? 'Không thể cập nhật thêm trạng thái'
+                        : 'Chọn trạng thái'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {allowedNextSteps.length === 0 ? (
+                    <SelectItem value="__DISABLED__" disabled>
+                      Không thể cập nhật thêm trạng thái
+                    </SelectItem>
+                  ) : (
+                    allowedNextSteps.map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {deliveryStepMap[key]}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {currentDeliveryStep && (
+                <p className="text-xs text-gray-500">
+                  Trạng thái hiện tại:{' '}
+                  <span className="font-medium">
+                    {deliveryStepMap[currentDeliveryStep] ||
+                      currentDeliveryStep}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            {/* Ghi chú */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryNote" className="text-base font-semibold">
+                Ghi chú
+              </Label>
+              <Textarea
+                id="deliveryNote"
+                placeholder="Nhập ghi chú..."
+                value={deliveryNote}
+                onChange={(e) => setDeliveryNote(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {/* Địa điểm */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="deliveryLocation"
+                className="text-base font-semibold"
+              >
+                Địa điểm
+              </Label>
+              <Input
+                id="deliveryLocation"
+                placeholder="Nhập địa điểm..."
+                value={deliveryLocation}
+                onChange={(e) => setDeliveryLocation(e.target.value)}
+              />
+            </div>
+
+            {/* Upload ảnh */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Hình ảnh</Label>
+              <UploadImage
+                multiple={false}
+                maxFiles={1}
+                onChange={handleDeliveryImageChange}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Hủy
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={handleUpdateDeliveryStatus}
+              disabled={
+                isUpdatingDeliveryStatus ||
+                !deliveryStep ||
+                allowedNextSteps.length === 0
+              }
+              className="bg-green-600 text-white hover:bg-green-700"
+            >
+              {isUpdatingDeliveryStatus
+                ? 'Đang cập nhật...'
+                : 'Cập nhật trạng thái'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

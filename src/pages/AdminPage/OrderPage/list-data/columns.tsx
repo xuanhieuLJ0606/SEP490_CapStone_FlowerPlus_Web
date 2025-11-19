@@ -1,20 +1,14 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { CellAction } from './cell-action';
 import { useSearchParams } from 'react-router-dom';
+import { DeliveryStatusCell } from './DeliveryStatusCell';
+import __helpers from '@/helpers';
 
 const statusMap: Record<string, string> = {
   UNPAID: 'Chưa thanh toán',
   PAID: 'Đã thanh toán',
   PENDING: 'Đang xử lý',
   CANCELLED: 'Đã huỷ'
-};
-
-const deliveryStepMap: Record<string, string> = {
-  PENDING_CONFIRMATION: 'Chờ xác nhận',
-  PREPARING: 'Đang chuẩn bị',
-  DELIVERING: 'Đang giao',
-  DELIVERED: 'Giao thành công',
-  DELIVERY_FAILED: 'Giao thất bại'
 };
 
 export const columns: ColumnDef<any>[] = [
@@ -110,23 +104,22 @@ export const columns: ColumnDef<any>[] = [
     header: 'Trạng thái giao hàng',
     enableSorting: false,
     cell: ({ row }) => {
-      // deliveryStatuses là mảng các bước, lấy bước cuối cùng làm status hiện tại
       const deliveryStatuses = row.original.deliveryStatuses || [];
-      let currentStep = '';
-      if (deliveryStatuses.length > 0) {
-        // tìm bản ghi eventAt lớn nhất
-        const latest = deliveryStatuses.reduce((prev: any, curr: any) => {
-          return new Date(prev.eventAt) > new Date(curr.eventAt) ? prev : curr;
-        });
-        currentStep = latest.step;
-      }
+      return <DeliveryStatusCell deliveryStatuses={deliveryStatuses} />;
+    }
+  },
+
+  {
+    accessorKey: 'requestDeliveryTime',
+    header: 'Thời gian giao hàng mong muốn',
+    enableSorting: false,
+    cell: ({ row }) => {
+      const requestDeliveryTime = row.original.requestDeliveryTime;
       return (
         <span>
-          {currentStep ? (
-            deliveryStepMap[currentStep] || currentStep
-          ) : (
-            <span className="text-gray-400">Chưa có</span>
-          )}
+          {requestDeliveryTime == null
+            ? 'Không có'
+            : __helpers.convertToDate(requestDeliveryTime)}
         </span>
       );
     }
