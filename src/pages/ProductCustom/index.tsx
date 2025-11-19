@@ -34,7 +34,8 @@ import {
   Heart,
   List,
   MapPin,
-  Phone
+  Phone,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TYPE_PRODUCT } from '@/pages/AdminPage/ProductsPage/list/overview';
@@ -115,6 +116,7 @@ export default function ProductCustomImproved() {
     shippingAddress: '',
     phoneNumber: '',
     returnUrl: '',
+    requestDeliveryTime: '',
     cancelUrl: '',
     note: '',
     quantity: 1
@@ -202,6 +204,7 @@ export default function ProductCustomImproved() {
       description: form.description,
       stock: Number(form.stock) || 0,
       price: Number(form.price) || 0,
+      requestDeliveryTime: orderForm.requestDeliveryTime || null,
       isActive: true,
       custom: true,
       productType: form.productType,
@@ -279,7 +282,8 @@ export default function ProductCustomImproved() {
       returnUrl: orderForm.returnUrl || 'string',
       cancelUrl: orderForm.cancelUrl || 'string',
       note: orderForm.note,
-      quantity: Number(orderForm.quantity) || 1
+      quantity: Number(orderForm.quantity) || 1,
+      requestDeliveryTime: orderForm.requestDeliveryTime || null
     };
 
     const [err] = await checkoutProduct(payload);
@@ -319,6 +323,7 @@ export default function ProductCustomImproved() {
       shippingAddress: '',
       phoneNumber: '',
       returnUrl: '',
+      requestDeliveryTime: '',
       cancelUrl: '',
       note: '',
       quantity: 1
@@ -1348,7 +1353,23 @@ export default function ProductCustomImproved() {
                         />
                       </div>
                     </div>
-
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Clock className="h-4 w-4" />
+                        Thời gian giao hàng mong muốn
+                      </Label>
+                      <Input
+                        type="datetime-local"
+                        value={orderForm.requestDeliveryTime}
+                        onChange={(e) =>
+                          setOrderForm((s) => ({
+                            ...s,
+                            requestDeliveryTime: e.target.value
+                          }))
+                        }
+                        className="border-gray-200 focus:border-rose-400"
+                      />
+                    </div>
                     <div>
                       <Label className="mb-2 block text-sm font-semibold text-gray-700">
                         Ghi chú
