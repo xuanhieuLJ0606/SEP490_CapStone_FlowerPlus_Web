@@ -10,7 +10,8 @@ import {
   ShoppingBag,
   CheckCircle2,
   Plus,
-  Check
+  Check,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,6 +71,7 @@ export default function CheckoutModal({
     ward: ''
   });
   const [note, setNote] = useState('');
+  const [requestDeliveryTime, setRequestDeliveryTime] = useState(''); // <<< NEW
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -107,22 +109,25 @@ export default function CheckoutModal({
       (addr) => addr.id === selectedAddressId
     );
 
+    const baseData = {
+      note: note,
+      requestDeliveryTime: requestDeliveryTime || null, // <<< NEW: gửi lên backend
+      returnUrl: window.location.origin + '/checkout/success',
+      cancelUrl: window.location.origin + '/checkout/cancel'
+    };
+
     const checkoutData = isNewAddress
       ? {
+          ...baseData,
           shippingAddress: `${newAddress.address}, ${newAddress.ward}, ${newAddress.district}, ${newAddress.province}`,
           phoneNumber: newAddress.phoneNumber,
-          recipientName: newAddress.recipientName,
-          note: note,
-          returnUrl: window.location.origin + '/checkout/success',
-          cancelUrl: window.location.origin + '/checkout/cancel'
+          recipientName: newAddress.recipientName
         }
       : {
+          ...baseData,
           shippingAddress: `${selectedAddress?.address}, ${selectedAddress?.ward}, ${selectedAddress?.district}, ${selectedAddress?.province}`,
           phoneNumber: selectedAddress?.phoneNumber,
-          recipientName: selectedAddress?.recipientName,
-          note: note,
-          returnUrl: window.location.origin + '/checkout/success',
-          cancelUrl: window.location.origin + '/checkout/cancel'
+          recipientName: selectedAddress?.recipientName
         };
 
     onCheckout(checkoutData);
@@ -132,6 +137,7 @@ export default function CheckoutModal({
     setStep(1);
     setIsNewAddress(false);
     setNote('');
+    setRequestDeliveryTime(''); // <<< reset luôn
     onClose();
   };
 
@@ -394,6 +400,7 @@ export default function CheckoutModal({
                     </div>
                   )}
 
+                  {/* Ghi chú đơn hàng */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2 text-sm font-medium">
                       <FileText className="h-4 w-4" />
@@ -405,6 +412,24 @@ export default function CheckoutModal({
                       placeholder="Ví dụ: Cẩn thận giúp tôi nhé, giao giờ hành chính..."
                       className="min-h-[80px] border-gray-200 focus:border-rose-400"
                     />
+                  </div>
+
+                  {/* Thời gian giao hàng mong muốn - requestDeliveryTime */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-sm font-medium">
+                      <Clock className="h-4 w-4" />
+                      Thời gian giao hàng mong muốn
+                    </Label>
+                    <Input
+                      type="datetime-local"
+                      value={requestDeliveryTime}
+                      onChange={(e) => setRequestDeliveryTime(e.target.value)}
+                      className="border-gray-200 focus:border-rose-400"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Thời gian chỉ mang tính tham khảo, shop sẽ cố gắng giao
+                      gần nhất có thể.
+                    </p>
                   </div>
                 </motion.div>
               )}
@@ -468,11 +493,24 @@ export default function CheckoutModal({
                         );
                       })()
                     )}
-                    {note && (
-                      <div className="mt-3 border-t border-rose-200 pt-3">
-                        <p className="text-sm text-gray-700">
-                          <strong>Ghi chú:</strong> {note}
-                        </p>
+
+                    {/* Hiển thị ghi chú & thời gian giao hàng */}
+                    {(note || requestDeliveryTime) && (
+                      <div className="mt-3 space-y-1 border-t border-rose-200 pt-3">
+                        {note && (
+                          <p className="text-sm text-gray-700">
+                            <strong>Ghi chú:</strong> {note}
+                          </p>
+                        )}
+                        {requestDeliveryTime && (
+                          <p className="flex items-center gap-1 text-sm text-gray-700">
+                            <Clock className="h-4 w-4 text-rose-600" />
+                            <span>
+                              <strong>Thời gian giao mong muốn:</strong>{' '}
+                              {requestDeliveryTime}
+                            </span>
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>

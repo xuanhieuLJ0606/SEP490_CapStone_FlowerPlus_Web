@@ -1,5 +1,5 @@
 import BaseRequest from '@/config/axios.config';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useGetOrders = () => {
   return useQuery({
@@ -29,10 +29,30 @@ export const useCheckoutProductCustom = () => {
 };
 
 export const useAddTransactionToOrder = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['add-transaction-to-order'],
     mutationFn: async (data: any) => {
       return BaseRequest.Post('/orders/add-transaction-to-order', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    }
+  });
+};
+
+export const useUpdateDeliveryStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['update-delivery-status'],
+    mutationFn: async (data: any) => {
+      return BaseRequest.Post(
+        `/orders/${data.orderId}/delivery-status/set`,
+        data
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     }
   });
 };

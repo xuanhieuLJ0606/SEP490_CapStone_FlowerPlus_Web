@@ -29,7 +29,7 @@ class helpers {
       date.getMonth() === 0 &&
       date.getFullYear() === 1970
     ) {
-      return 'N/A';
+      return 'Chưa xác định';
     }
 
     const day = date.getDate().toString().padStart(2, '0');

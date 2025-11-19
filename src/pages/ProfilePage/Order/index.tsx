@@ -12,7 +12,9 @@ import {
   PackageCheck,
   AlertCircle,
   PackageX,
-  Loader2
+  Loader2,
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 import { useGetOrdersByUser } from '@/queries/order.query';
 import { Input } from '@/components/ui/input';
@@ -30,10 +32,21 @@ const OrderHistoryProfile = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   const { data: resOrders, isPending } = useGetOrdersByUser();
   const orders = resOrders?.data || [];
+
+  // Định nghĩa thứ tự các bước giao hàng (từ nhỏ đến lớn)
+
+  const deliveryStepOrder = [
+    'PENDING_CONFIRMATION',
+    'PREPARING',
+    'DELIVERING',
+    'DELIVERED',
+    'DELIVERY_FAILED'
+  ];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -42,20 +55,60 @@ const OrderHistoryProfile = () => {
     }).format(amount);
   };
 
-  // Lấy delivery status hiện tại dựa vào eventAt mới nhất
+  // Lấy delivery status hiện tại (step lớn nhất - cao nhất trong flow)
   const getCurrentDeliveryStatus = (deliveryStatuses: any) => {
     if (!deliveryStatuses || deliveryStatuses.length === 0) {
       return 'PENDING_CONFIRMATION';
     }
 
-    const sortedStatuses = [...deliveryStatuses].sort((a, b) => {
-      const aTime = new Date(a.eventAt).getTime();
-      const bTime = new Date(b.eventAt).getTime();
-      return bTime - aTime;
+    // Tìm step có thứ tự lớn nhất trong deliveryStepOrder
+    let maxStep = 'PENDING_CONFIRMATION';
+    let maxIndex = 0;
+
+    deliveryStatuses.forEach((status) => {
+      const currentIndex = deliveryStepOrder.indexOf(status.step);
+      if (currentIndex > maxIndex) {
+        maxIndex = currentIndex;
+        maxStep = status.step;
+      }
     });
 
-    return sortedStatuses[0].step;
+    return maxStep;
   };
+
+  // Tạo timeline đầy đủ cho order dựa trên current status
+  const generateTimeline = (deliveryStatuses: any[], currentStatus: string) => {
+    if (!deliveryStatuses || deliveryStatuses.length === 0) {
+      return [
+        {
+          step: 'PENDING_CONFIRMATION',
+          isCurrent: true,
+          isCompleted: false,
+          hasData: false
+        }
+      ];
+    }
+
+    const currentIndex = deliveryStepOrder.indexOf(currentStatus);
+    const timeline = [] as any;
+
+    // Tạo timeline từ PENDING_CONFIRMATION đến currentStatus
+    for (let i = 0; i <= currentIndex; i++) {
+      const step = deliveryStepOrder[i];
+      const statusData = deliveryStatuses.find((s) => s.step === step);
+
+      timeline.push({
+        step,
+        isCurrent: step === currentStatus,
+        isCompleted: i < currentIndex,
+        hasData: !!statusData,
+        data: statusData || null
+      });
+    }
+
+    return timeline;
+  };
+
   const getDeliveryStatusConfig = (step) => {
     const configs = {
       PENDING_CONFIRMATION: {
@@ -257,6 +310,10 @@ const OrderHistoryProfile = () => {
             );
             const statusConfig = getDeliveryStatusConfig(currentStatus);
             const StatusIcon = statusConfig.icon;
+            const timeline = generateTimeline(
+              order.deliveryStatuses,
+              currentStatus
+            );
 
             return (
               <div
@@ -314,72 +371,109 @@ const OrderHistoryProfile = () => {
                 {isExpanded && (
                   <div className="border-t border-rose-100 bg-white">
                     {/* Delivery Status Timeline */}
-                    {order.deliveryStatuses &&
-                      order.deliveryStatuses.length > 0 && (
-                        <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50/30 to-pink-50/30 p-6">
-                          <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
-                            <Truck className="h-4 w-4 text-rose-600" />
-                            Trạng thái giao hàng
-                          </h4>
-                          <div className="space-y-3">
-                            {[...order.deliveryStatuses]
-                              .sort(
-                                (a: any, b: any) =>
-                                  new Date(b.eventAt).getTime() -
-                                  new Date(a.eventAt).getTime()
-                              )
-                              .map((status, idx) => {
-                                const config = getDeliveryStatusConfig(
-                                  status.step
-                                );
-                                const Icon = config.icon;
-                                const isLatest = idx === 0;
+                    <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50/30 to-pink-50/30 p-6">
+                      <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
+                        <Truck className="h-4 w-4 text-rose-600" />
+                        Trạng thái giao hàng
+                      </h4>
+                      <div className="space-y-3">
+                        {timeline.map((timelineItem, idx) => {
+                          const config = getDeliveryStatusConfig(
+                            timelineItem.step
+                          );
+                          const Icon = config.icon;
+                          const isLatest = timelineItem.isCurrent;
+                          const statusData = timelineItem.data;
 
-                                return (
-                                  <div
-                                    key={status.id}
-                                    className={`flex items-start gap-4 rounded-xl border ${config.borderColor} ${isLatest ? 'bg-white shadow-md' : 'bg-white/50'} p-4 transition-all`}
+                          return (
+                            <div
+                              key={timelineItem.step}
+                              className={`flex items-start gap-4 rounded-xl border ${config.borderColor} ${
+                                isLatest
+                                  ? 'bg-white shadow-md'
+                                  : timelineItem.isCompleted
+                                    ? 'bg-white/50'
+                                    : 'bg-gray-50/50 opacity-50'
+                              } p-4 transition-all`}
+                            >
+                              <div
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                                  timelineItem.hasData
+                                    ? `bg-gradient-to-br ${config.gradient} shadow-md`
+                                    : 'bg-gray-200'
+                                }`}
+                              >
+                                <Icon
+                                  className={`h-6 w-6 ${timelineItem.hasData ? 'text-white' : 'text-gray-400'}`}
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p
+                                    className={`font-semibold ${timelineItem.hasData ? config.textColor : 'text-gray-500'}`}
                                   >
-                                    <div
-                                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${config.gradient} shadow-md`}
-                                    >
-                                      <Icon className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <p
-                                          className={`font-semibold ${config.textColor}`}
-                                        >
-                                          {config.label}
-                                        </p>
-                                        {isLatest && (
-                                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
-                                            Mới nhất
-                                          </span>
-                                        )}
-                                      </div>
-                                      <p className="mt-1 text-xs text-gray-500">
-                                        {new Date(
-                                          status.eventAt
-                                        ).toLocaleString('vi-VN')}
+                                    {config.label}
+                                  </p>
+                                  {isLatest && (
+                                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
+                                      Hiện tại
+                                    </span>
+                                  )}
+                                  {timelineItem.isCompleted && (
+                                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                                  )}
+                                </div>
+                                {statusData ? (
+                                  <>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      {new Date(
+                                        statusData.eventAt
+                                      ).toLocaleString('vi-VN')}
+                                    </p>
+                                    {statusData.note && (
+                                      <p className="mt-2 text-sm text-gray-600">
+                                        {statusData.note}
                                       </p>
-                                      {status.note && (
-                                        <p className="mt-2 text-sm text-gray-600">
-                                          {status.note}
-                                        </p>
-                                      )}
-                                      {status.location && (
-                                        <p className="mt-1 text-xs text-gray-500">
-                                          📍 {status.location}
-                                        </p>
-                                      )}
+                                    )}
+                                    {statusData.location && (
+                                      <p className="mt-1 text-xs text-gray-500">
+                                        📍 {statusData.location}
+                                      </p>
+                                    )}
+                                  </>
+                                ) : (
+                                  <p className="mt-1 text-xs text-gray-400">
+                                    Chưa cập nhật
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Image thumbnail */}
+                              {statusData?.imageUrl && (
+                                <div className="shrink-0">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setZoomedImage(statusData.imageUrl);
+                                    }}
+                                    className="group relative h-20 w-20 overflow-hidden rounded-lg border-2 border-rose-200 bg-white shadow-sm transition-all hover:border-rose-400 hover:shadow-md"
+                                  >
+                                    <img
+                                      src={statusData.imageUrl}
+                                      alt={`Hình ảnh ${config.label}`}
+                                      className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/20">
+                                      <ImageIcon className="h-6 w-6 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                                     </div>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        </div>
-                      )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
                     {/* Items */}
                     <div className="p-6">
@@ -582,6 +676,36 @@ const OrderHistoryProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setZoomedImage(null)}
+        >
+          <button
+            onClick={() => setZoomedImage(null)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          <div
+            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={zoomedImage}
+              alt="Zoomed image"
+              className="h-full w-full object-contain"
+            />
+          </div>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-md">
+            <p className="text-sm text-white">Nhấn vào ngoài để đóng</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
