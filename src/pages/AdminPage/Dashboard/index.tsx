@@ -1,12 +1,13 @@
 'use client';
 
-import { StatCards } from './stat-cards';
-import { SalesChart } from './sales-chart';
-import { TopProductsChart } from './top-products-chart';
-import { CustomerChart } from './customer-chart';
+import { useGetDashboard } from '@/queries/admin.query';
+import { StatsCard } from './stats-card';
 import { RevenueChart } from './revenue-chart';
+import { OrdersChart } from './orders-chart';
 
 export default function Dashboard() {
+  const { data: dashboardData } = useGetDashboard();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-rose-950">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -20,18 +21,45 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Stat Cards */}
-        <StatCards />
-
-        {/* Charts Grid */}
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <SalesChart />
-          <RevenueChart />
+        {/* Stats Cards */}
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatsCard
+            title="Tổng doanh thu"
+            value={`${(dashboardData?.totalRevenue || 0).toLocaleString('vi-VN')} ₫`}
+            description="Từ tất cả các đơn hàng"
+            icon="💰"
+          />
+          <StatsCard
+            title="Tổng đơn hàng"
+            value={dashboardData?.totalOrders || 0}
+            description="Đơn hàng được tạo"
+            icon="📦"
+          />
+          <StatsCard
+            title="Tổng sản phẩm"
+            value={dashboardData?.totalProducts || 0}
+            description="Sản phẩm trong kho"
+            icon="🌸"
+          />
+          <StatsCard
+            title="Tổng khách hàng"
+            value={dashboardData?.totalUsers || 0}
+            description="Người dùng đã đăng ký"
+            icon="👥"
+          />
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <TopProductsChart />
-          <CustomerChart />
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Revenue Chart */}
+          {dashboardData?.monthlyRevenue && (
+            <RevenueChart data={dashboardData.monthlyRevenue} />
+          )}
+
+          {/* Orders Chart */}
+          {dashboardData?.monthlyOrders && (
+            <OrdersChart data={dashboardData.monthlyOrders} />
+          )}
         </div>
       </main>
     </div>

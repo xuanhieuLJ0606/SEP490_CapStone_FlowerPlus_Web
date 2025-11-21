@@ -5,8 +5,9 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
-  BarController,
+  PointElement,
+  LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend
@@ -22,23 +23,24 @@ import {
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
-  BarController,
+  PointElement,
+  LineElement,
+  LineController,
   Title,
   Tooltip,
   Legend
 );
 
-interface RevenueChartProps {
+interface OrdersChartProps {
   data: Array<{
     month: string;
-    revenue: number;
+    orderCount: number;
   }>;
 }
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function OrdersChart({ data }: OrdersChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstanceRef = useRef<ChartJS<'bar'> | null>(null);
+  const chartInstanceRef = useRef<ChartJS<'line'> | null>(null);
 
   // Format data for display
   const formattedData = data.map((item) => ({
@@ -62,19 +64,27 @@ export function RevenueChart({ data }: RevenueChartProps) {
     const isDark = document.documentElement.classList.contains('dark');
     const textColor = isDark ? '#cbd5e1' : '#475569';
     const gridColor = isDark ? '#334155' : '#e2e8f0';
-    const barColor = isDark ? '#f472b6' : '#ec4899';
+    const lineColor = isDark ? '#60a5fa' : '#3b82f6';
+    const pointColor = isDark ? '#93c5fd' : '#1e40af';
 
     chartInstanceRef.current = new ChartJS(ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
         labels: formattedData.map((item) => item.month),
         datasets: [
           {
-            label: 'Doanh thu (₫)',
-            data: formattedData.map((item) => item.revenue),
-            backgroundColor: barColor,
-            borderRadius: 4,
-            hoverBackgroundColor: isDark ? '#f91880' : '#db2777'
+            label: 'Đơn hàng',
+            data: formattedData.map((item) => item.orderCount),
+            borderColor: lineColor,
+            backgroundColor: `${lineColor}10`,
+            borderWidth: 3,
+            fill: true,
+            pointRadius: 6,
+            pointBackgroundColor: pointColor,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 8,
+            tension: 0.4
           }
         ]
       },
@@ -90,8 +100,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
           },
           tooltip: {
             callbacks: {
-              label: (context) =>
-                `Doanh thu: ${context.parsed.y.toLocaleString('vi-VN')} ₫`
+              label: (context) => `Đơn hàng: ${context.parsed.y} đơn`
             }
           }
         },
@@ -99,7 +108,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
           y: {
             ticks: {
               color: textColor,
-              callback: (value) => value.toLocaleString('vi-VN')
+              callback: (value) => value.toString()
             },
             grid: {
               color: gridColor
@@ -128,10 +137,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
     <Card className="bg-white dark:bg-slate-900">
       <CardHeader>
         <CardTitle className="text-slate-900 dark:text-white">
-          Doanh thu theo tháng
+          Đơn hàng theo tháng
         </CardTitle>
         <CardDescription className="text-slate-600 dark:text-slate-400">
-          Doanh thu bán hàng hàng tháng
+          Số lượng đơn hàng bán được hàng tháng
         </CardDescription>
       </CardHeader>
       <CardContent>

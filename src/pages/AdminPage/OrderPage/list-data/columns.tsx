@@ -124,6 +124,16 @@ export const columns: ColumnDef<any>[] = [
       );
     }
   },
+
+  {
+    accessorKey: 'voucherCode',
+    header: 'Mã voucher',
+    enableSorting: false,
+    cell: ({ row }) => {
+      const voucherCode = row.original.voucherCode;
+      return <span>{voucherCode}</span>;
+    }
+  },
   {
     accessorKey: 'items',
     header: 'Sản phẩm',
@@ -136,7 +146,6 @@ export const columns: ColumnDef<any>[] = [
             <span className="text-gray-400">Không có</span>
           )}
           {items.map((item: any, idx: number) => {
-            // Sửa xử lý productImage là mảng hoặc chuỗi JSON mảng
             let image;
             if (typeof item.productImage === 'string') {
               try {

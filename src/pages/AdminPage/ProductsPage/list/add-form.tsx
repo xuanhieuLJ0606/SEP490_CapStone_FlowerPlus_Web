@@ -36,7 +36,7 @@ import { Switch } from '@/components/ui/switch';
 
 export function AddProductForm() {
   const { mutateAsync: createProduct } = useCreateProduct();
-  const { data: resCategories } = useGetCategories();
+  const { data: resCategories } = useGetCategories(false);
   const categories = resCategories?.data || [];
   const { data: resFlowers } = useGetListProductByPaging(
     1,

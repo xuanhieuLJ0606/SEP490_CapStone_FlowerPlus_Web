@@ -40,7 +40,6 @@ const deliveryStepMap: Record<string, string> = {
   DELIVERY_FAILED: 'Giao thất bại'
 };
 
-// Các bước được phép chuyển tiếp từ mỗi trạng thái hiện tại
 const deliveryStepTransitions: Record<string, string[]> = {
   PENDING_CONFIRMATION: [
     'PREPARING',
@@ -50,8 +49,8 @@ const deliveryStepTransitions: Record<string, string[]> = {
   ],
   PREPARING: ['DELIVERING', 'DELIVERED', 'DELIVERY_FAILED'],
   DELIVERING: ['DELIVERED', 'DELIVERY_FAILED'],
-  DELIVERED: [], // đã giao thành công => không cho cập nhật nữa
-  DELIVERY_FAILED: [] // thất bại => tuỳ logic, tạm không cho cập nhật nữa
+  DELIVERED: [],
+  DELIVERY_FAILED: []
 };
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
@@ -166,7 +165,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       return;
     }
 
-    // Nếu user cố tình hack chọn step không hợp lệ (ví dụ qua devtool)
     if (currentDeliveryStep && !allowedNextSteps.includes(deliveryStep)) {
       toast({
         title: 'Lỗi',

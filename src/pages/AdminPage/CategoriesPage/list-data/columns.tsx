@@ -28,13 +28,28 @@ export const columns: ColumnDef<any>[] = [
     header: 'Tên sản phẩm',
     enableSorting: true
   },
-
   {
     accessorKey: 'parentName',
     header: 'Danh mục cha',
     enableSorting: false,
     cell: ({ row }) => {
       return <span>{row.original.parentName || 'Không'}</span>;
+    }
+  },
+  {
+    accessorKey: 'isPublic',
+    header: 'Trạng thái',
+    enableSorting: true,
+    cell: ({ row }) => {
+      return (
+        <span
+          className={`${
+            row.original.isPublic ? '' : ' text-red-500'
+          } border-0 font-semibold`}
+        >
+          {row.original.isPublic ? 'Hoạt động' : 'Khóa'}
+        </span>
+      );
     }
   },
 
