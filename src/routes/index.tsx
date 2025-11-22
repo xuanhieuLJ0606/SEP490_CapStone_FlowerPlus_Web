@@ -16,6 +16,7 @@ const CategoriesPage = lazy(
 const ItemsPage = lazy(() => import('@/pages/AdminPage/ItemsPage/index'));
 const FlowersPage = lazy(() => import('@/pages/AdminPage/FlowersPage/index'));
 const ProductsPage = lazy(() => import('@/pages/AdminPage/ProductsPage/index'));
+const ProductCustom = lazy(() => import('@/pages/ProductCustom/index'));
 const ListProduct = lazy(() => import('@/pages/ListProduct/index'));
 const DashboardPage = lazy(() => import('@/pages/AdminPage/Dashboard/index'));
 const OrderPage = lazy(() => import('@/pages/AdminPage/OrderPage/index'));
@@ -23,6 +24,11 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage/index'));
 const TransactionPage = lazy(
   () => import('@/pages/AdminPage/TransactionPage/index')
 );
+const UserManagementPage = lazy(
+  () => import('@/pages/AdminPage/UserManagmentPage/index')
+);
+const VouchersPage = lazy(() => import('@/pages/AdminPage/VouchersPage/index'));
+
 // ----------------------------------------------------------------------
 
 export default function AppRouter() {
@@ -52,6 +58,10 @@ export default function AppRouter() {
         {
           path: '/profile',
           element: <ProfilePage />
+        },
+        {
+          path: '/custom-product',
+          element: <ProductCustom />
         }
       ]
     }
@@ -87,6 +97,7 @@ export default function AppRouter() {
           path: '/admin/products',
           element: <ProductsPage />
         },
+
         {
           path: '/admin/orders',
           element: <OrderPage />
@@ -98,6 +109,14 @@ export default function AppRouter() {
         {
           path: '/admin/profile',
           element: <ProfilePage />
+        },
+        {
+          path: '/admin/user-management',
+          element: <UserManagementPage />
+        },
+        {
+          path: '/admin/vouchers',
+          element: <VouchersPage />
         }
       ]
     }

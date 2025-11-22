@@ -44,6 +44,7 @@ import {
   BarChart,
   Flower,
   BaggageClaim,
+  Users,
   BanknoteIcon
 } from 'lucide-react';
 
@@ -57,6 +58,7 @@ export const Icons = {
   syringe: Syringe, // Tiêm chủng
   dog: Dog, // Vật nuôi
   pill: Pill, // Bệnh dịch
+  users: Users, // Người dùng
   grid: Grid3X3, // Danh sách
   barChart: BarChart, // Thống kê
   stretchhorizontal: StretchHorizontal, // Danh sách

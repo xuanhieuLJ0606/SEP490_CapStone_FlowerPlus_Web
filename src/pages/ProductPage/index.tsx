@@ -24,6 +24,8 @@ import {
 import { useGetProductById } from '@/queries/product.query';
 import { toast } from '@/components/ui/use-toast';
 import { useAddItemToCart } from '@/queries/cart.query';
+import { PRODUCT_TYPE_MEAN } from '@/constants/data';
+import { useGetVouchers } from '@/queries/voucher.query';
 
 type Composition = {
   childId: number;
@@ -62,7 +64,9 @@ export default function ProductDetailPage() {
   const productId = Number(id);
   const { data: resProduct, isLoading } = useGetProductById(productId);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
+  const { data: resVouchers } = useGetVouchers();
+  const vouchers = resVouchers?.data || [];
+  console.log(vouchers);
   const product = resProduct?.data || resProduct;
 
   const productImages = useMemo(() => {
@@ -348,12 +352,13 @@ export default function ProductDetailPage() {
                                 {comp.childName}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {comp.childType} • Số lượng: {comp.quantity}
+                                {PRODUCT_TYPE_MEAN[comp.childType]} • Số lượng:{' '}
+                                {comp.quantity}
                               </div>
                             </div>
                             {comp.childPrice && (
-                              <div className="text-sm font-semibold text-rose-600">
-                                {formatVND(comp.childPrice)} ₫
+                              <div className="text-sm font-semibold text-muted-foreground">
+                                Giá lẻ: {formatVND(comp.childPrice)} ₫
                               </div>
                             )}
                           </div>

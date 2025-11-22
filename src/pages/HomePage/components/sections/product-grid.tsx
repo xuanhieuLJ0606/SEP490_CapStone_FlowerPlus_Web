@@ -96,10 +96,16 @@ export default function ProductGrid({
                   <div className="relative flex-shrink-0">
                     <div
                       className="flex h-48 w-full cursor-pointer items-center justify-center rounded-t-lg bg-rose-50"
-                      onClick={() => (window.location.href = `/product/1`)}
+                      onClick={() =>
+                        (window.location.href = `/product/${product.id}`)
+                      }
                     >
                       <span className="font-semibold text-gray-600">
-                        Hình ảnh hoa
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="h-full max-h-48 w-full object-cover"
+                        />
                       </span>
                     </div>
 
@@ -126,7 +132,9 @@ export default function ProductGrid({
                   <div className="flex flex-grow flex-col p-4">
                     <h3
                       className="mb-2 line-clamp-2 flex-grow cursor-pointer text-sm font-semibold "
-                      onClick={() => (window.location.href = `/product/1`)}
+                      onClick={() =>
+                        (window.location.href = `/product/${product.id}`)
+                      }
                     >
                       {product.name}
                     </h3>

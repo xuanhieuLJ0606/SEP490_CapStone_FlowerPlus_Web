@@ -1,155 +1,133 @@
+import { useGetListProductByPaging } from '@/queries/product.query';
 import ProductGrid from './product-grid';
+import { PRODUCT_TYPE } from '@/constants/data';
 
-const products = [
-  {
-    id: 1,
-    name: 'Bó hoa cẩm tú cầu Nàng Thơ',
-    originalPrice: 350000,
-    discountedPrice: 300000,
-    discount: 14,
-    label: 'HOT',
-    labelColor: 'bg-red-500',
-    image: '/src/assets/logo1.jpg'
-  },
-  {
-    id: 2,
-    name: 'Bó Hoa Hồng Sinh Nhật Giá Rẻ Đẹp',
-    originalPrice: 350000,
-    discountedPrice: 300000,
-    discount: 14,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo2.png'
-  },
-  {
-    id: 3,
-    name: 'Bó Hoa Tú Cầu Kem Dâu',
-    originalPrice: 350000,
-    discountedPrice: 300000,
-    discount: 14,
-    label: 'New',
-    labelColor: 'bg-green-500',
-    image: '/src/assets/logo3.jpg'
-  },
-  {
-    id: 4,
-    name: 'Bó Hoa The Ivory Dream',
-    originalPrice: 400000,
-    discountedPrice: 330000,
-    discount: 18,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo4.png'
-  },
-  {
-    id: 5,
-    name: 'Shimmer iZi',
-    originalPrice: 350000,
-    discountedPrice: 320000,
-    discount: 9,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo5.png'
-  },
-  {
-    id: 6,
-    name: 'Bó Hoa Sinh Nhật Cẩm Tú Cầu Moomi',
-    originalPrice: 300000,
-    discountedPrice: 235000,
-    discount: 22,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo6.jpg'
-  },
-  {
-    id: 7,
-    name: 'Bó Hoa Hồng Đỏ Tình Yêu',
-    originalPrice: 450000,
-    discountedPrice: 380000,
-    discount: 16,
-    label: 'HOT',
-    labelColor: 'bg-red-500',
-    image: '/src/assets/logo1.jpg'
-  },
-  {
-    id: 8,
-    name: 'Bó Hoa Tulip Vàng Tươi',
-    originalPrice: 320000,
-    discountedPrice: 280000,
-    discount: 13,
-    label: 'New',
-    labelColor: 'bg-green-500',
-    image: '/src/assets/logo2.png'
-  },
-  {
-    id: 9,
-    name: 'Bó Hoa Cẩm Chướng Hồng',
-    originalPrice: 280000,
-    discountedPrice: 240000,
-    discount: 14,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo3.jpg'
-  },
-  {
-    id: 10,
-    name: 'Bó Hoa Ly Trắng Tinh Khôi',
-    originalPrice: 500000,
-    discountedPrice: 420000,
-    discount: 16,
-    label: 'HOT',
-    labelColor: 'bg-red-500',
-    image: '/src/assets/logo4.png'
-  },
-  {
-    id: 11,
-    name: 'Bó Hoa Cúc Trắng Thanh Lịch',
-    originalPrice: 250000,
-    discountedPrice: 210000,
-    discount: 16,
-    label: null,
-    labelColor: '',
-    image: '/src/assets/logo5.png'
-  },
-  {
-    id: 12,
-    name: 'Bó Hoa Hướng Dương Rực Rỡ',
-    originalPrice: 380000,
-    discountedPrice: 320000,
-    discount: 16,
-    label: 'New',
-    labelColor: 'bg-green-500',
-    image: '/src/assets/logo6.jpg'
+// Hàm helper để parse JSON string của images
+const parseImages = (imagesString: string): string[] => {
+  try {
+    return JSON.parse(imagesString);
+  } catch {
+    return [];
   }
-];
+};
+
+// Hàm chuyển đổi data từ API sang format của ProductGrid
+const transformProductData = (apiProducts: any[]) => {
+  return apiProducts.map((product) => {
+    const images = parseImages(product.images);
+    const firstImage = images[0] || '/placeholder-image.jpg';
+    console.log(firstImage);
+    const originalPrice = product.price;
+    const discountedPrice = product.price; // Nếu API có trường discountPrice thì dùng product.discountPrice
+    const discount =
+      originalPrice > discountedPrice
+        ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+        : 0;
+
+    let label = null;
+    let labelColor = '';
+
+    // Logic label dựa trên ngày tạo
+    if (product.createdAt) {
+      const createdDate = new Date(product.createdAt);
+      const daysDiff =
+        (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysDiff <= 7) {
+        label = 'New' as any;
+        labelColor = 'bg-green-500';
+      }
+    }
+
+    // Logic label dựa trên discount
+    if (discount >= 20) {
+      label = 'HOT' as any;
+      labelColor = 'bg-red-500';
+    }
+
+    return {
+      id: product.id,
+      name: product.name,
+      originalPrice: originalPrice,
+      discountedPrice: discountedPrice,
+      discount: discount,
+      label: label,
+      labelColor: labelColor,
+      image: firstImage,
+      categories: product.categories,
+      compositions: product.compositions,
+      stock: product.stock,
+      description: product.description
+    };
+  });
+};
+
+// Hàm lọc sản phẩm theo category name
+const filterProductsByCategory = (products: any[], categoryName: string) => {
+  return products.filter((product) =>
+    product.categories?.some((cat: any) =>
+      cat.name.toLowerCase().includes(categoryName.toLowerCase())
+    )
+  );
+};
 
 export default function ProductSection() {
+  const { data: resProducts } = useGetListProductByPaging(
+    1,
+    100, // Tăng số lượng để lấy đủ sản phẩm cho tất cả categories
+    '',
+    PRODUCT_TYPE.PRODUCT
+  );
+
+  const allProducts = resProducts?.listObjects
+    ? transformProductData(resProducts.listObjects)
+    : [];
+
+  // Config cho các section
+  const sections = [
+    {
+      title: 'BÓ HOA RẺ HÔM NAY',
+      backgroundColor: 'bg-white',
+      filterFn: (products: any[]) =>
+        [...products].sort((a, b) => a.discountedPrice - b.discountedPrice)
+    },
+    {
+      title: 'HOA HỒNG',
+      backgroundColor: 'bg-[#f3e2d9]',
+      filterFn: (products: any[]) =>
+        filterProductsByCategory(products, 'hoa hồng')
+    },
+    {
+      title: 'HOA LY',
+      backgroundColor: 'bg-white',
+      filterFn: (products: any[]) =>
+        filterProductsByCategory(products, 'hoa ly')
+    },
+    {
+      title: 'HOA CÚC',
+      backgroundColor: 'bg-[#f3e2d9]',
+      filterFn: (products: any[]) =>
+        filterProductsByCategory(products, 'hoa cúc')
+    }
+  ];
+
   return (
     <div>
-      <ProductGrid
-        products={products}
-        maxShowProduct={5}
-        title="BÓ HOA RẺ HÔM NAY"
-        backgroundColor="bg-white"
-      />
-      <ProductGrid
-        products={products}
-        maxShowProduct={5}
-        title="HOA HỒNG"
-        backgroundColor="bg-[#f3e2d9]"
-      />
-      <ProductGrid
-        products={products}
-        maxShowProduct={5}
-        title="HOA LY"
-        backgroundColor="bg-white"
-      />
-      <ProductGrid
-        products={products}
-        maxShowProduct={5}
-        title="HOA CÚC"
-        backgroundColor="bg-[#f3e2d9]"
-      />
+      {sections.map((section, index) => {
+        const filteredProducts = section.filterFn(allProducts);
+
+        // Không hiển thị section nếu không có sản phẩm
+        if (filteredProducts.length === 0) return null;
+
+        return (
+          <ProductGrid
+            key={index}
+            products={filteredProducts}
+            maxShowProduct={5}
+            title={section.title}
+            backgroundColor={section.backgroundColor}
+          />
+        );
+      })}
     </div>
   );
 }

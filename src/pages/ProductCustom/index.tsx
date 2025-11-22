@@ -282,6 +282,7 @@ export default function ProductCustomImproved() {
       returnUrl: orderForm.returnUrl || 'string',
       cancelUrl: orderForm.cancelUrl || 'string',
       note: orderForm.note,
+      voucherCode: null,
       quantity: Number(orderForm.quantity) || 1,
       requestDeliveryTime: orderForm.requestDeliveryTime || null
     };

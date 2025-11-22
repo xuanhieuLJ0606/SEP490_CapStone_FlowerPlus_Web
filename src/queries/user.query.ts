@@ -90,3 +90,21 @@ export const useGetMyInfoOnce = () => {
     staleTime: Infinity
   });
 };
+
+export const useGetUsers = () => {
+  return useQuery({
+    queryKey: ['get-users'],
+    queryFn: async () => {
+      return await BaseRequest.Get(`/auth/get-list-users`);
+    }
+  });
+};
+
+export const useCreateUser = () => {
+  return useMutation({
+    mutationKey: ['create-user'],
+    mutationFn: async (model: any) => {
+      return BaseRequestV2.Post(`/auth/register`, model);
+    }
+  });
+};

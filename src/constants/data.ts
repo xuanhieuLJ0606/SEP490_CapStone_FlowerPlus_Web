@@ -24,6 +24,19 @@ export const shopOwnerNavItems: any = [
     ]
   },
   {
+    label: 'Người dùng',
+    detail: [
+      {
+        title: 'Quản lý người dùng',
+        url: '/admin/user-management',
+        icon: 'users',
+        isActive: false,
+        shortcut: ['d', 'd'],
+        items: []
+      }
+    ]
+  },
+  {
     label: 'Bán hàng',
     detail: [
       {
@@ -62,6 +75,14 @@ export const shopOwnerNavItems: any = [
         isActive: false,
         shortcut: ['d', 'd'],
         items: []
+      },
+      {
+        title: 'Mã giảm giá',
+        url: '/admin/vouchers',
+        icon: 'voucher',
+        isActive: false,
+        shortcut: ['d', 'd'],
+        items: []
       }
     ]
   }
@@ -83,4 +104,10 @@ export const PRODUCT_TYPE = {
   FLOWER: 'FLOWER',
   ITEM: 'ITEM',
   PRODUCT: 'PRODUCT'
+};
+
+export const PRODUCT_TYPE_MEAN = {
+  FLOWER: 'Hoa',
+  ITEM: 'Phụ kiện',
+  PRODUCT: 'Sản phẩm'
 };
