@@ -1,12 +1,17 @@
 import BaseRequest from '@/config/axios.config';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const useGetCategories = () => {
+export const useGetCategories = (isPublic: boolean = true) => {
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', isPublic],
     queryFn: async () => {
-      const res = await BaseRequest.Get('/categories/tree');
-      return res;
+      if (isPublic) {
+        return await BaseRequest.Get(
+          `/categories/tree?isPublic=${isPublic.toString()}`
+        );
+      } else {
+        return await BaseRequest.Get('/categories/tree');
+      }
     }
   });
 };
