@@ -62,7 +62,7 @@
     "dotenv": "^16.4.5",
     "embla-carousel-react": "^8.0.0",
     "file-saver": "^2.0.5",
-    "framer-motion": "^12.23.22",
+    "framer-motion": "^12.23.24",
     "html5-qrcode": "^2.3.8",
     "input-otp": "^1.2.2",
     "jszip": "^3.10.1",

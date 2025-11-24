@@ -66,3 +66,15 @@ export const useGetProductCustomByPaging = (page: number, size: number) => {
     }
   });
 };
+
+export const useGetListProductToView = (page: number, size: number) => {
+  return useQuery({
+    queryKey: ['get-list-product-to-view', page, size],
+    queryFn: async () => {
+      const res = await BaseRequest.Get(
+        `/products/get-list-product-view?active=true&pageNumber=${page}&pageSize=${size}`
+      );
+      return res.data;
+    }
+  });
+};

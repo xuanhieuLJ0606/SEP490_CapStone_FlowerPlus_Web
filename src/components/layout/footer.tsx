@@ -43,7 +43,7 @@ const features = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-200 text-gray-800">
+   <footer className="bg-gray-900 text-white ">
       {/* Main Footer Content */}
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -59,7 +59,7 @@ export default function Footer() {
               <h3 className="mb-2 text-2xl font-bold text-rose-500">
                 FLOWERPLUS.VN
               </h3>
-              <p className="text-sm leading-relaxed text-gray-800">
+            <p className="text-sm leading-relaxed ">
                 Chuyên cung cấp hoa tươi chất lượng cao với giá cả hợp lý. Phục
                 vụ khách hàng tại TP.HCM và các tỉnh thành lân cận.
               </p>
@@ -100,7 +100,7 @@ export default function Footer() {
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-800 transition-colors duration-200 hover:text-rose-500"
+                     className="text-sm  transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -123,7 +123,7 @@ export default function Footer() {
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-800 transition-colors duration-200 hover:text-rose-500"
+                     className="text-sm  transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -146,7 +146,7 @@ export default function Footer() {
                 <li key={index}>
                   <a
                     href={link.href}
-                    className="text-sm text-gray-800 transition-colors duration-200 hover:text-rose-500"
+                     className="text-sm  transition-colors duration-200 hover:text-rose-500"
                   >
                     {link.name}
                   </a>
@@ -211,7 +211,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <motion.div
-        className="bg-gray-200 py-4"
+        className="bg-gray-900 py-4"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.5 }}
@@ -219,14 +219,11 @@ export default function Footer() {
       >
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <p className="text-sm text-gray-800">
+              <p className="text-sm ">
               © 2024 FlowerPlus.vn. Tất cả quyền được bảo lưu.
             </p>
-            <div className="flex gap-6 text-sm">
-              <a
-                href="#"
-                className="text-gray-800 transition-colors hover:text-rose-500"
-              >
+            <div className="flex gap-6 text-sm text-gray-400">
+              <a href="#" className=" transition-colors hover:text-rose-500">
                 Điều khoản sử dụng
               </a>
               <a
