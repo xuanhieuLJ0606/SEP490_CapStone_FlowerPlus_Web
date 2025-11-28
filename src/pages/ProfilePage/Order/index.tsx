@@ -14,7 +14,8 @@ import {
   PackageX,
   Loader2,
   Image as ImageIcon,
-  X
+  X,
+  ExternalLinkIcon
 } from 'lucide-react';
 import { useGetOrdersByUser } from '@/queries/order.query';
 import { Input } from '@/components/ui/input';
@@ -340,20 +341,40 @@ const OrderHistoryProfile = () => {
                       </div>
 
                       <div className="space-y-2 text-sm text-gray-600">
-                        <p className="flex items-center gap-2">
+                        {order?.transaction?.checkoutUrl ? (
+                          <a
+                            href={order?.transaction?.checkoutUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-rose-600 hover:text-rose-700"
+                          >
+                            <p className="flex items-center gap-2 ">
+                              <span className="font-medium text-gray-700">
+                                Tổng tiền:
+                              </span>
+
+                              <span className="text-xl font-bold text-rose-600  hover:underline">
+                                {formatCurrency(order.total)}
+                              </span>
+                              <ExternalLinkIcon className="h-4 w-4" />
+                            </p>
+                          </a>
+                        ) : (
+                          <p>Chờ link thanh toán</p>
+                        )}
+                        {/* <p>
                           <span className="font-medium text-gray-700">
-                            Tổng tiền:
-                          </span>
-                          <span className="text-xl font-bold text-rose-600">
-                            {formatCurrency(order.total)}
-                          </span>
-                        </p>
-                        <p>
-                          <span className="font-medium text-gray-700">
-                            Số lượng sản phẩm:
+                            Link thanh toán
                           </span>{' '}
-                          {order.items.length} sản phẩm
-                        </p>
+                          <a
+                            href={order?.transaction?.checkoutUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-rose-600 hover:text-rose-700"
+                          >
+                            tại đây
+                          </a>
+                        </p> */}
                       </div>
                     </div>
 
@@ -374,7 +395,7 @@ const OrderHistoryProfile = () => {
                     <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50/30 to-pink-50/30 p-6">
                       <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
                         <Truck className="h-4 w-4 text-rose-600" />
-                        Trạng thái giao hàng
+                        Trạng thái đơn hàng
                       </h4>
                       <div className="space-y-3">
                         {timeline.map((timelineItem, idx) => {

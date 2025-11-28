@@ -3,7 +3,7 @@ import helpers from '../helpers';
 
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://flower.autopass.blog/'
+    ? 'https://flower.autopass.blog/api'
     : 'http://localhost:8081/api/';
 
 const onRequestSuccess = (config: any) => {
