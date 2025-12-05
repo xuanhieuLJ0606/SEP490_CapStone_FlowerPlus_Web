@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Lock, Loader2, Flower2, Phone, User, Home } from 'lucide-react';
+import { Mail, Lock, Loader2, Flower2, Phone, User } from 'lucide-react';
 import {
   useInitForgotPassword,
   useLogin,
@@ -17,6 +17,7 @@ import {
 } from '@/queries/auth.query';
 import { AnimatePresence, motion } from 'framer-motion';
 import __helpers from '@/helpers';
+import { toast } from '../ui/use-toast';
 
 interface AuthModalProps {
   open: boolean;
@@ -24,13 +25,12 @@ interface AuthModalProps {
 }
 
 type RegisterPayload = {
-  name: string;
+  userName: string;
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
   phone: string;
-  age: number | '';
-  gender: string;
-  address: string;
 };
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
@@ -40,13 +40,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [username, setUsername] = useState('');
   // Register fields
   const [registerData, setRegisterData] = useState<RegisterPayload>({
-    name: '',
+    userName: '',
     email: '',
     password: '',
-    phone: '',
-    age: '',
-    gender: '',
-    address: ''
+    firstName: '',
+    lastName: '',
+    phone: ''
   });
 
   const { mutateAsync: loginMutate, isPending: isLoginLoading } = useLogin();
@@ -76,41 +75,45 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const [err, data] = await initForgotPassword({ contactInfo: email });
-    if (!err && data) {
-      const { resetToken } = data.data;
-      window.location.href = `${window.location.origin}/auth/forgot-password/${resetToken}`;
+    const [err] = await initForgotPassword({ contactInfo: email });
+    if (!err) {
+      toast({
+        title: 'Đặt lại mật khẩu thành công',
+        description:
+          'Gửi mail đặt lại mật khẩu thành công, check mail để lấy link',
+        variant: 'success'
+      });
     }
   };
 
-  const handleRegisterChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setRegisterData((prev) => ({
       ...prev,
-      [name]: name === 'age' ? (value === '' ? '' : Number(value)) : value
+      [name]: value
     }));
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
-      !registerData.name ||
+      !registerData.userName ||
       !registerData.email ||
       !registerData.password ||
-      !registerData.phone ||
-      !registerData.age ||
-      !registerData.gender ||
-      !registerData.address ||
-      !username
+      !registerData.firstName
     ) {
       return;
     }
     const [err] = (await registerMutate?.(registerData)) ?? [true];
     if (!err) {
+      // Hiển thị thông báo thành công
+      alert(
+        'Đăng ký thành công! Vui lòng kiểm tra email để xem thông tin chào mừng.'
+      );
       onOpenChange(false);
-      window.location.reload();
+      // Không reload để user có thể đăng nhập ngay
+      setMode('login');
+      setUsername(registerData.userName);
     }
   };
 
@@ -346,19 +349,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 <form onSubmit={handleRegisterSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label
-                      htmlFor="register-name"
+                      htmlFor="register-username"
                       className="text-sm font-medium text-foreground"
                     >
-                      Họ tên
+                      Tên đăng nhập <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        id="register-name"
-                        name="name"
+                        id="register-username"
+                        name="userName"
                         type="text"
-                        placeholder="Nguyễn Văn A"
-                        value={registerData.name}
+                        placeholder="username"
+                        value={registerData.userName}
                         onChange={handleRegisterChange}
                         className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
                         required
@@ -366,12 +369,13 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label
                       htmlFor="register-email"
                       className="text-sm font-medium text-foreground"
                     >
-                      Email
+                      Email <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -388,12 +392,13 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label
                       htmlFor="register-password"
                       className="text-sm font-medium text-foreground"
                     >
-                      Mật khẩu
+                      Mật khẩu <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -406,10 +411,60 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                         onChange={handleRegisterChange}
                         className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
                         required
+                        minLength={6}
+                        disabled={isRegisterLoading}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Mật khẩu phải có ít nhất 6 ký tự
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="register-firstname"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Họ <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="register-firstname"
+                        name="firstName"
+                        type="text"
+                        placeholder="Nguyễn"
+                        value={registerData.firstName}
+                        onChange={handleRegisterChange}
+                        className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
+                        required
                         disabled={isRegisterLoading}
                       />
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="register-lastname"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Tên
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="register-lastname"
+                        name="lastName"
+                        type="text"
+                        placeholder="Văn A"
+                        value={registerData.lastName}
+                        onChange={handleRegisterChange}
+                        className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
+                        disabled={isRegisterLoading}
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label
                       htmlFor="register-phone"
@@ -427,94 +482,6 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                         value={registerData.phone}
                         onChange={handleRegisterChange}
                         className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
-                        required
-                        disabled={isRegisterLoading}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="register-age"
-                      className="text-sm font-medium text-foreground"
-                    >
-                      Tuổi
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="register-age"
-                        name="age"
-                        type="number"
-                        placeholder="18"
-                        value={registerData.age}
-                        min={0}
-                        onChange={handleRegisterChange}
-                        className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-3"
-                        required
-                        disabled={isRegisterLoading}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="register-gender"
-                      className="text-sm font-medium text-foreground"
-                    >
-                      Giới tính
-                    </Label>
-                    <div className="flex items-center gap-4 pl-1">
-                      <label className="flex cursor-pointer items-center space-x-2 text-sm">
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="male"
-                          checked={registerData.gender === 'male'}
-                          onChange={handleRegisterChange}
-                          disabled={isRegisterLoading}
-                        />
-                        <span>Nam</span>
-                      </label>
-                      <label className="flex cursor-pointer items-center space-x-2 text-sm">
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="female"
-                          checked={registerData.gender === 'female'}
-                          onChange={handleRegisterChange}
-                          disabled={isRegisterLoading}
-                        />
-                        <span>Nữ</span>
-                      </label>
-                      <label className="flex cursor-pointer items-center space-x-2 text-sm">
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="other"
-                          checked={registerData.gender === 'other'}
-                          onChange={handleRegisterChange}
-                          disabled={isRegisterLoading}
-                        />
-                        <span>Khác</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="register-address"
-                      className="text-sm font-medium text-foreground"
-                    >
-                      Địa chỉ
-                    </Label>
-                    <div className="relative">
-                      <Home className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="register-address"
-                        name="address"
-                        type="text"
-                        placeholder="123 Đường Hoa hồng, TP.HCM"
-                        value={registerData.address}
-                        onChange={handleRegisterChange}
-                        className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
-                        required
                         disabled={isRegisterLoading}
                       />
                     </div>

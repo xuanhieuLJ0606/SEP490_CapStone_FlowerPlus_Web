@@ -10,7 +10,7 @@ const SignInPage = lazy(() => import('@/pages/auth/signin'));
 const CompleteForgotPasswordPage = lazy(
   () => import('@/pages/auth/complete-forgot-password')
 );
-// const VerifyEmailPage = lazy(() => import('@/pages/auth/verify-email'));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/verify-email'));
 const HomePage = lazy(() => import('@/pages/HomePage/index'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductPage/index'));
 const AdminLayout = lazy(() => import('@/components/layout/admin-layout'));
@@ -143,10 +143,10 @@ export default function AppRouter() {
       path: '/auth/forgot-password/:resetToken',
       element: <CompleteForgotPasswordPage />
     },
-    // {
-    //   path: '/auth/verify-email/:verificationToken',
-    //   element: <VerifyEmailPage />
-    // },
+    {
+      path: '/auth/verify-email/:verificationToken',
+      element: <VerifyEmailPage />
+    },
     {
       path: '/404',
       element: <NotFound />

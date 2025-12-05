@@ -47,7 +47,7 @@ export const useInitForgotPassword = () => {
   return useMutation({
     mutationKey: ['init-forgot-password'],
     mutationFn: async (model: any) => {
-      return BaseRequestV2.Post(`/api/auth/forgot-password/initiate`, model);
+      return BaseRequestV2.Post(`/auth/forgot-password/initiate`, model);
     }
   });
 };
@@ -56,7 +56,7 @@ export const useCompletedForgotPassword = () => {
   return useMutation({
     mutationKey: ['completed-password'],
     mutationFn: async (model: any) => {
-      return BaseRequestV2.Post(`/api/auth/forgot-password/complete`, model);
+      return BaseRequestV2.Post(`/auth/forgot-password/complete`, model);
     }
   });
 };
