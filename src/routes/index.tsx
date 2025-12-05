@@ -7,6 +7,10 @@ const DashboardLayout = lazy(
 );
 
 const SignInPage = lazy(() => import('@/pages/auth/signin'));
+const CompleteForgotPasswordPage = lazy(
+  () => import('@/pages/auth/complete-forgot-password')
+);
+// const VerifyEmailPage = lazy(() => import('@/pages/auth/verify-email'));
 const HomePage = lazy(() => import('@/pages/HomePage/index'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductPage/index'));
 const AdminLayout = lazy(() => import('@/components/layout/admin-layout'));
@@ -28,6 +32,9 @@ const UserManagementPage = lazy(
   () => import('@/pages/AdminPage/UserManagmentPage/index')
 );
 const VouchersPage = lazy(() => import('@/pages/AdminPage/VouchersPage/index'));
+const RefundManagementPage = lazy(
+  () => import('@/pages/AdminPage/RefundManagementPage/index')
+);
 
 // ----------------------------------------------------------------------
 
@@ -117,6 +124,10 @@ export default function AppRouter() {
         {
           path: '/admin/vouchers',
           element: <VouchersPage />
+        },
+        {
+          path: '/admin/refunds',
+          element: <RefundManagementPage />
         }
       ]
     }
@@ -128,7 +139,14 @@ export default function AppRouter() {
       element: <SignInPage />,
       index: true
     },
-
+    {
+      path: '/auth/forgot-password/:resetToken',
+      element: <CompleteForgotPasswordPage />
+    },
+    // {
+    //   path: '/auth/verify-email/:verificationToken',
+    //   element: <VerifyEmailPage />
+    // },
     {
       path: '/404',
       element: <NotFound />

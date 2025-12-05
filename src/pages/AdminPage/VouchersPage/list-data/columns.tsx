@@ -2,6 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import __helpers from '@/helpers';
 import { useSearchParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { CellAction } from './cell-action';
 
 export type Voucher = {
   id: number;
@@ -197,11 +198,10 @@ export const columns: ColumnDef<Voucher>[] = [
       const count = productIds?.length ?? 0;
       return <span className="text-sm text-gray-700">{count} sản phẩm</span>;
     }
+  },
+  {
+    id: 'actions',
+    header: 'Hành động',
+    cell: ({ row }) => <CellAction data={row.original} />
   }
-  // có thể thêm cột actions ở đây nếu cần
-  // {
-  //   id: 'actions',
-  //   header: 'Hành động',
-  //   cell: ({ row }) => <CellAction data={row.original} />
-  // }
 ];

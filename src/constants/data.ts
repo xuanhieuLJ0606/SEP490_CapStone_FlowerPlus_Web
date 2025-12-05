@@ -54,6 +54,14 @@ export const shopOwnerNavItems: any = [
         isActive: false,
         shortcut: ['d', 'd'],
         items: []
+      },
+      {
+        title: 'Hoàn tiền',
+        url: '/admin/refunds',
+        icon: 'banknote',
+        isActive: false,
+        shortcut: ['d', 'd'],
+        items: []
       }
     ]
   },

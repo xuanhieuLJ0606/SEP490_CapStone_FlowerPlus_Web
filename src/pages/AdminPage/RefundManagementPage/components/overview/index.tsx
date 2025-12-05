@@ -1,16 +1,15 @@
 import { useSearchParams } from 'react-router-dom';
 import ListData from '../../list-data';
 import { DataTableSkeleton } from '@/components/shared/data-table-skeleton';
-
 import React from 'react';
-import { useGetTransactionsWithOrder } from '@/queries/transaction.query';
+import { useGetRefundRequests } from '@/queries/order.query';
 
 export function OverViewTab() {
   const [searchParams] = useSearchParams();
   const page = Number(searchParams.get('page') || 1);
   const pageLimit = Number(searchParams.get('limit') || 10);
 
-  const { data: res, isPending } = useGetTransactionsWithOrder();
+  const { data: res, isPending } = useGetRefundRequests();
 
   const { pagedData, totalRecords, pageCount } = React.useMemo(() => {
     if (!res?.data || !Array.isArray(res.data)) {
@@ -33,12 +32,12 @@ export function OverViewTab() {
 
   return (
     <>
-      <div className="grid gap-6 rounded-md p-4 pt-0 ">
-        <h1 className="text-center font-bold">DANH SÁCH GIAO DỊCH</h1>
+      <div className="grid gap-6 rounded-md p-4 pt-0">
+        <h1 className="text-center font-bold">DANH SÁCH YÊU CẦU HOÀN TIỀN</h1>
         {isPending ? (
           <div className="p-5">
             <DataTableSkeleton
-              columnCount={10}
+              columnCount={8}
               filterableColumnCount={2}
               searchableColumnCount={1}
             />

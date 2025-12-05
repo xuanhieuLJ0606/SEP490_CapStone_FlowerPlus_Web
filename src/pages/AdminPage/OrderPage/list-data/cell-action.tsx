@@ -5,17 +5,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import {
   useAddTransactionToOrder,
-  useUpdateDeliveryStatus
+  useUpdateDeliveryStatus,
+  useCancelOrder
 } from '@/queries/order.query';
 import { useGetProductByIdMutation } from '@/queries/product.query';
-import { Edit, PackageCheck } from 'lucide-react';
+import { Edit, PackageCheck, XCircle, AlertCircle } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import UploadImage from '@/components/shared/upload-image';
@@ -27,6 +29,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CellActionProps {
   data: any;
@@ -57,6 +60,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [finalAmount, setFinalAmount] = useState<string>('');
 
@@ -66,12 +70,17 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [deliveryLocation, setDeliveryLocation] = useState<string>('');
   const [deliveryImageUrl, setDeliveryImageUrl] = useState<string>('');
 
+  // Cancel order states
+  const [cancelReason, setCancelReason] = useState<string>('');
+
   const { mutateAsync: addTransactionToOrder, isPending } =
     useAddTransactionToOrder();
   const {
     mutateAsync: updateDeliveryStatus,
     isPending: isUpdatingDeliveryStatus
   } = useUpdateDeliveryStatus();
+  const { mutateAsync: cancelOrder, isPending: isCancellingOrder } =
+    useCancelOrder();
   const { mutateAsync: getProductById } = useGetProductByIdMutation();
 
   const handleGetProductById = async (id: number) => {
@@ -218,6 +227,52 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     }
   };
 
+  const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập lý do hủy đơn hàng',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const [err] = await cancelOrder({
+        orderId: data.id,
+        reason: cancelReason.trim()
+      });
+
+      if (err) {
+        toast({
+          title: 'Thất bại',
+          description:
+            err?.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Thành công',
+        description:
+          'Đơn hàng đã được hủy thành công. Yêu cầu hoàn tiền đã được tạo.'
+      });
+
+      setOpenCancelDialog(false);
+      setCancelReason('');
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra khi hủy đơn hàng',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Kiểm tra có thể hủy đơn không (chỉ khi đang PREPARING)
+  const canCancelOrder = currentDeliveryStep === 'PREPARING';
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -239,6 +294,16 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         >
           <PackageCheck className="size-4" />
         </Button>
+        {canCancelOrder && (
+          <Button
+            className="flex items-center gap-2 bg-red-600 text-white hover:bg-red-700"
+            size="icon"
+            type="button"
+            onClick={() => setOpenCancelDialog(true)}
+          >
+            <XCircle className="size-4" />
+          </Button>
+        )}
       </div>
 
       {/* Dialog chốt đơn / tạo transaction */}
@@ -514,6 +579,61 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               {isUpdatingDeliveryStatus
                 ? 'Đang cập nhật...'
                 : 'Cập nhật trạng thái'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Order Dialog */}
+      <Dialog open={openCancelDialog} onOpenChange={setOpenCancelDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-700">
+              Hủy đơn hàng
+            </DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn hủy đơn hàng #{data.orderCode}?
+            </DialogDescription>
+          </DialogHeader>
+
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              Sau khi hủy, yêu cầu hoàn tiền sẽ được tạo tự động. Khách hàng có
+              thể theo dõi trạng thái hoàn tiền trong trang cá nhân.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-2">
+            <Label htmlFor="cancelReason" className="text-base font-semibold">
+              Lý do hủy <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="cancelReason"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+              rows={4}
+              disabled={isCancellingOrder}
+            />
+          </div>
+
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                type="button"
+                disabled={isCancellingOrder}
+              >
+                Đóng
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleCancelOrder}
+              disabled={isCancellingOrder || !cancelReason.trim()}
+            >
+              {isCancellingOrder ? 'Đang xử lý...' : 'Xác nhận hủy'}
             </Button>
           </DialogFooter>
         </DialogContent>
