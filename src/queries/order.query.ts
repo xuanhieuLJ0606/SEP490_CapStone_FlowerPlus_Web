@@ -56,3 +56,58 @@ export const useUpdateDeliveryStatus = () => {
     }
   });
 };
+
+export const useCancelOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['cancel-order'],
+    mutationFn: async (data: { orderId: number; reason: string }) => {
+      return BaseRequest.Post(`/orders/${data.orderId}/cancel`, {
+        reason: data.reason
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-by-user'] });
+    }
+  });
+};
+
+export const useGetRefundRequests = () => {
+  return useQuery({
+    queryKey: ['refund-requests'],
+    queryFn: () => BaseRequest.Get('/orders/refund-requests')
+  });
+};
+
+export const useGetMyRefundRequests = () => {
+  return useQuery({
+    queryKey: ['my-refund-requests'],
+    queryFn: () => BaseRequest.Get('/orders/my-refund-requests')
+  });
+};
+
+export const useProcessRefund = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['process-refund'],
+    mutationFn: async (data: {
+      refundId: number;
+      status: string;
+      adminNote: string;
+      proofImageUrl: string;
+    }) => {
+      return BaseRequest.Post(
+        `/orders/refund-requests/${data.refundId}/process`,
+        {
+          status: data.status,
+          adminNote: data.adminNote,
+          proofImageUrl: data.proofImageUrl
+        }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['refund-requests'] });
+    }
+  });
+};

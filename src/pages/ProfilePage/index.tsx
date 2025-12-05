@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { User, Package, MapPin, Tag } from 'lucide-react';
+import { User, Package, MapPin, Tag, Banknote } from 'lucide-react';
 import OrderHistoryProfile from './Order';
 import { PersonalInfo } from './PersonalInfo';
 import { useGetMyInfo } from '@/queries/auth.query';
 import Address from './Address';
+import RefundRequests from './RefundRequests';
 
 const PlaceholderContent = ({ title }) => (
   <div className="space-y-6">
@@ -23,6 +24,8 @@ const ProfilePage = () => {
     { id: 'info', label: 'Thông tin cá nhân', icon: User },
     { id: 'orders', label: 'Đơn hàng', icon: Package, badge: 6 },
     { id: 'address', label: 'Địa chỉ', icon: MapPin },
+    { id: 'refunds', label: 'Hoàn tiền', icon: Banknote },
+
     { id: 'vouchers', label: 'Mã giảm giá', icon: Tag }
   ];
 
@@ -34,14 +37,14 @@ const ProfilePage = () => {
         return <OrderHistoryProfile />;
       case 'address':
         return <Address />;
+      case 'refunds':
+        return <RefundRequests />;
       case 'vouchers':
         return <PlaceholderContent title="Mã giảm giá" />;
       case 'favorites':
         return <PlaceholderContent title="Yêu thích" />;
       case 'reviews':
         return <PlaceholderContent title="Nhận xét" />;
-      case 'refunds':
-        return <PlaceholderContent title="Quản lý đơn trả hàng" />;
       case 'affiliate':
         return <PlaceholderContent title="Quản lý tiếp thị liên kết" />;
       default:
