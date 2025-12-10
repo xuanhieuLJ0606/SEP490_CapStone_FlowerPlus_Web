@@ -4,6 +4,7 @@ import {
   useUpdateCategory
 } from '@/queries/categories.query';
 import { PencilIcon, Trash2Icon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { SyncItemButton } from '@/components/shared/sync-item-button';
 import React, { useMemo, useState } from 'react';
 import {
   Dialog,
@@ -102,6 +103,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   return (
     <div className="flex items-center gap-2">
+      {/* Sync button */}
+      <SyncItemButton type="category" id={data.id} />
+
       {/* Edit button */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <Button

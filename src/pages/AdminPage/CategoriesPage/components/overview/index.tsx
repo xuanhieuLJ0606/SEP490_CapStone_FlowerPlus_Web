@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 import ListData from '../../list-data';
 import { DataTableSkeleton } from '@/components/shared/data-table-skeleton';
 import { useGetCategories } from '@/queries/categories.query';
+import { ManualSyncButtons } from '@/components/shared/manual-sync-buttons';
 import React from 'react';
 
 function flattenCategories(data: any[]) {
@@ -65,7 +66,10 @@ export function OverViewTab() {
   return (
     <>
       <div className="grid gap-6 rounded-md p-4 pt-0 ">
-        <h1 className="text-center font-bold">DANH SÁCH DANH MỤC</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-center font-bold">DANH SÁCH DANH MỤC</h1>
+          <ManualSyncButtons size="sm" />
+        </div>
         {isPending ? (
           <div className="p-5">
             <DataTableSkeleton

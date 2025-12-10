@@ -17,23 +17,17 @@ type UploadItem = {
 };
 
 type Props = {
-  /** Cho phép chọn nhiều ảnh */
   multiple?: boolean;
-  /** Endpoint upload (mặc định: /api/files/upload) */
   endpoint?: string;
-  /** Gọi khi đã có URL ảnh. single -> string, multiple -> string[] */
   onChange?: (value: string | string[]) => void;
-  /** Giới hạn kiểu file nếu cần, ví dụ "image/*" */
   accept?: string;
-  /** Giá trị khởi tạo (URL/URLs) nếu có */
   defaultValue?: string | string[];
-  /** Tối đa số ảnh (optional) */
   maxFiles?: number;
 };
 
 export default function UploadImage({
   multiple = false,
-  endpoint = '/files/upload',
+  endpoint = 'https://upload.autopass.blog/upload',
   onChange,
   accept = 'image/*',
   defaultValue,
@@ -58,13 +52,11 @@ export default function UploadImage({
     [items]
   );
 
-  // Sử dụng useRef để theo dõi giá trị trước đó và chỉ gọi onChange khi thực sự thay đổi
   const prevUrlsRef = React.useRef<string[]>([]);
 
   React.useEffect(() => {
     if (!onChange) return;
 
-    // So sánh với giá trị trước đó để tránh loop
     const urlsString = JSON.stringify(currentUrls);
     const prevUrlsString = JSON.stringify(prevUrlsRef.current);
 
@@ -90,7 +82,6 @@ export default function UploadImage({
       files = files.slice(0, canTake);
     }
 
-    // Chuẩn bị item preview trước
     const newItems: UploadItem[] = files.map((file) => ({
       id: crypto.randomUUID(),
       file,
@@ -100,7 +91,6 @@ export default function UploadImage({
     }));
     setItems((prev) => (multiple ? [...prev, ...newItems] : newItems));
 
-    // Upload tuần tự (API trả 1 url/1 file)
     setBusy(true);
     try {
       for (const it of newItems) {
@@ -119,7 +109,6 @@ export default function UploadImage({
     );
 
     const form = new FormData();
-    // API yêu cầu key là "file"
     if (item.file) form.append('file', item.file);
 
     try {
@@ -127,7 +116,19 @@ export default function UploadImage({
         method: 'POST',
         data: form
       });
-      const imageUrl = res.data;
+
+      // Handle new API response format
+      let imageUrl = '';
+      if (res.data) {
+        if (typeof res.data === 'string') {
+          // Old format - direct URL
+          imageUrl = res.data;
+        } else if (res.data.downloadUrl) {
+          // New format - extract downloadUrl from object
+          imageUrl = res.data.downloadUrl;
+        }
+      }
+
       if (imageUrl) {
         setItems((prev) =>
           prev.map((i) =>
@@ -139,6 +140,13 @@ export default function UploadImage({
       }
     } catch (err: any) {
       console.error('Upload error:', err);
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? { ...i, status: 'error', error: 'Upload failed' }
+            : i
+        )
+      );
     }
   };
 

@@ -4,6 +4,7 @@ import { useGetCategories } from '@/queries/categories.query';
 import { useGetListProductByPaging } from '@/queries/product.query';
 import { TYPE_PRODUCT } from './overview';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
+import { SyncItemButton } from '@/components/shared/sync-item-button';
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -352,6 +353,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   return (
     <div className="flex items-center gap-2">
+      {/* Sync button */}
+      <SyncItemButton type="product" id={data.id} />
+
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <Button
           className="flex items-center gap-2 bg-orange-600 text-white"

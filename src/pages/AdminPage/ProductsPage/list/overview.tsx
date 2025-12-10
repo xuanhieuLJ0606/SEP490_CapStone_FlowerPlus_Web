@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 import { DataTableSkeleton } from '@/components/shared/data-table-skeleton';
 import ListData from './table';
 import { useGetListProductByPaging } from '@/queries/product.query';
+import { ManualSyncButtons } from '@/components/shared/manual-sync-buttons';
 
 export const TYPE_PRODUCT = {
   FLOWER: 'FLOWER',
@@ -41,7 +42,10 @@ export function OverViewTab() {
 
   return (
     <div className="grid gap-6 rounded-md p-4 pt-0 ">
-      <h1 className="text-center font-bold">DANH SÁCH PRODUCTS</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-center font-bold">DANH SÁCH PRODUCTS</h1>
+        <ManualSyncButtons size="sm" />
+      </div>
       <div className="flex items-center gap-4 p-2">
         <label htmlFor="type-select" className="font-medium">
           Loại:

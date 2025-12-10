@@ -40,7 +40,7 @@ export const useGetCategoriesByPaging = (
 export const useCreateCategory = () => {
   return useMutation({
     mutationFn: async (data: any) => {
-        const res = await BaseRequest.Post('/categories/create-category', data);
+      const res = await BaseRequest.Post('/categories/create-category', data);
       return res;
     }
   });
@@ -50,7 +50,7 @@ export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-     const res = await BaseRequest.Post(`/categories/update-category`, data);
+      const res = await BaseRequest.Post(`/categories/update-category`, data);
       return res;
     },
     onSuccess: () => {

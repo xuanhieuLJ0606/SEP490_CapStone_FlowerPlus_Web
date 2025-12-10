@@ -55,7 +55,7 @@ export default function AppSidebar() {
     window.location.href = '/manager/login';
   };
   console.log('infoUser', infoUser);
-   const navItems = shopOwnerNavItems;
+  const navItems = shopOwnerNavItems;
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -73,11 +73,11 @@ export default function AppSidebar() {
       className="border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
     >
       <SidebarHeader className=" py-2">
-       <div className="flex items-center gap-3 py-2 text-rose-700 dark:text-rose-400">
+        <div className="flex items-center gap-3 py-2 text-rose-700 dark:text-rose-400">
           <div>{/* <company.logo className="size-5" /> */}</div>
           <div className="grid flex-1 text-left leading-tight">
             <span className="truncate text-lg font-bold">{company.name}</span>
-             <span className="truncate text-xs text-rose-600/80 dark:text-rose-400/80"></span>
+            <span className="truncate text-xs text-rose-600/80 dark:text-rose-400/80"></span>
           </div>
         </div>
       </SidebarHeader>
@@ -107,14 +107,14 @@ export default function AppSidebar() {
                           isActive={isActive}
                           className={`my-1 rounded-lg transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${
                             isActive
-                               ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
+                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
                               : ''
                           }`}
                         >
                           <div
                             className={`mr-3 flex size-5 items-center justify-center rounded-md ${
                               isActive
-                                 ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400'
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400'
                                 : 'text-slate-500 dark:text-slate-400'
                             }`}
                           >
@@ -124,7 +124,7 @@ export default function AppSidebar() {
                           <ChevronRight
                             className={`ml-auto size-4 transition-transform duration-200 ${
                               isActive
-                                 ? 'text-rose-600 dark:text-rose-400'
+                                ? 'text-rose-600 dark:text-rose-400'
                                 : 'text-slate-400 dark:text-slate-500'
                             } group-data-[state=open]/collapsible:rotate-90`}
                           />
@@ -141,7 +141,7 @@ export default function AppSidebar() {
                                   isActive={isSubActive}
                                   className={`rounded-lg pl-9 transition-all ${
                                     isSubActive
-                                   ? 'bg-rose-50 font-medium text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
+                                      ? 'bg-rose-50 font-medium text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
                                       : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                                   }`}
                                 >
@@ -164,7 +164,7 @@ export default function AppSidebar() {
                       isActive={isActive}
                       className={`my-1 rounded-lg transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${
                         isActive
-                           ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
+                          ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400'
                           : ''
                       }`}
                     >
@@ -172,7 +172,7 @@ export default function AppSidebar() {
                         <div
                           className={`mr-3 flex size-5 items-center justify-center rounded-md ${
                             isActive
-                             ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400'
+                              ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400'
                               : 'text-slate-500 dark:text-slate-400'
                           }`}
                         >
@@ -203,7 +203,7 @@ export default function AppSidebar() {
                       src={session?.user?.image || ''}
                       alt={session?.user?.name || ''}
                     />
-                     <AvatarFallback className="bg-gradient-to-br from-rose-500 to-teal-600 text-sm font-semibold text-white">
+                    <AvatarFallback className="bg-gradient-to-br from-rose-500 to-teal-600 text-sm font-semibold text-white">
                       {getInitials(infoUser?.name)}
                     </AvatarFallback>
                   </Avatar>
