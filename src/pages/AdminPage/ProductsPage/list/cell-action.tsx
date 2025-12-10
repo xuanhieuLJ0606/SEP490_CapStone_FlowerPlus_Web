@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useUpdateProduct } from '@/queries/products.query';
+import { useUpdateProduct, useDeleteProduct } from '@/queries/products.query';
 import { useGetCategories } from '@/queries/categories.query';
 import { useGetListProductByPaging } from '@/queries/product.query';
 import { TYPE_PRODUCT } from './overview';
@@ -13,10 +13,19 @@ import {
   DialogClose,
   DialogFooter
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-// removed Select import (không dùng trong edit)
 import {
   Command,
   CommandEmpty,
@@ -30,9 +39,11 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, X, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import { Switch } from '@/components/ui/switch';
+import UploadImage from '@/components/shared/upload-image';
 
 interface CellActionProps {
   data: any;
@@ -40,7 +51,8 @@ interface CellActionProps {
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const { mutateAsync: updateProduct } = useUpdateProduct();
-  const { data: resCategories } = useGetCategories();
+  const { mutateAsync: deleteProduct } = useDeleteProduct();
+  const { data: resCategories } = useGetCategories(false);
   const { data: resFlowers } = useGetListProductByPaging(
     1,
     100,
@@ -55,90 +67,182 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   );
 
   const categories = resCategories?.data || [];
-  const flowers = resFlowers?.data || resFlowers?.items || [];
-  const items = resItems?.data || resItems?.items || [];
+  const flowers = resFlowers?.listObjects || [];
+  const items = resItems?.listObjects || [];
 
   const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [openFlower, setOpenFlower] = useState(false);
   const [openItem, setOpenItem] = useState(false);
   const [openCategory, setOpenCategory] = useState(false);
+
+  const parseImages = (images: any) => {
+    if (typeof images === 'string') {
+      try {
+        return JSON.parse(images);
+      } catch {
+        return [];
+      }
+    }
+    return Array.isArray(images) ? images : [];
+  };
+
   const [form, setForm] = useState({
-    // common
     name: data.name || '',
     description: data.description || '',
     price: Number(data.price) || 0,
     stock: Number(data.stock) || 0,
-    isPublic: Boolean(data.isPublic ?? true),
-    type: data.type as string,
-    vector: (data.vector as string) || '',
-    imageUrls: Array.isArray(data.images)
-      ? (data.images as any[])
-          .slice(1)
-          .map((img: any) => img?.url)
-          .filter(Boolean)
-      : data.imageUrls || [],
-    mainImageUrl:
-      Array.isArray(data.images) && data.images.length > 0
-        ? (data.images[0]?.url as string)
-        : data.mainImageUrl || '',
-    // selections
-    flowerSelections: (Array.isArray(data.children) ? data.children : [])
-      .filter((c: any) => c?.type === TYPE_PRODUCT.FLOWER)
+    isActive: Boolean(data.isActive ?? true),
+    productType: data.productType as string,
+    imageUrls: parseImages(data.images),
+    flowerSelections: (Array.isArray(data.compositions)
+      ? data.compositions
+      : []
+    )
+      .filter((c: any) => c?.childType === TYPE_PRODUCT.FLOWER)
       .map((c: any) => ({
-        childId: c.id,
-        name: c.name,
+        childId: c.childId,
+        name: c.childName,
         quantity: Number(c.quantity) || 1
       })),
-    itemSelections: (Array.isArray(data.children) ? data.children : [])
-      .filter((c: any) => c?.type === TYPE_PRODUCT.ITEM)
+    itemSelections: (Array.isArray(data.compositions) ? data.compositions : [])
+      .filter((c: any) => c?.childType === TYPE_PRODUCT.ITEM)
       .map((c: any) => ({
-        childId: c.id,
-        name: c.name,
+        childId: c.childId,
+        name: c.childName,
         quantity: Number(c.quantity) || 1
       })),
     categorySelections: (Array.isArray(data.categories)
       ? data.categories
       : []
-    ).map((c: any) => ({ childId: c.id, name: c.name, quantity: 1 }))
+    ).map((c: any) => ({ childId: c.id, name: c.name }))
   });
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // build payload giống create, kèm id, và không cho đổi type
+
+    if (!form.name.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập tên sản phẩm',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (form.name.length > 255) {
+      toast({
+        title: 'Lỗi',
+        description: 'Tên sản phẩm không được vượt quá 255 ký tự',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (form.price < 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Giá sản phẩm không được âm',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (form.price === 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập giá sản phẩm',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (form.stock < 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Số lượng tồn kho không được âm',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (
+      (data.productType === TYPE_PRODUCT.FLOWER ||
+        data.productType === TYPE_PRODUCT.ITEM) &&
+      form.categorySelections.length === 0
+    ) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng chọn ít nhất một danh mục',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (data.productType === TYPE_PRODUCT.PRODUCT) {
+      if (
+        form.flowerSelections.length === 0 &&
+        form.itemSelections.length === 0
+      ) {
+        toast({
+          title: 'Lỗi',
+          description: 'Sản phẩm combo phải có ít nhất một thành phần',
+          variant: 'destructive'
+        });
+        return;
+      }
+      const invalidQuantity = [
+        ...form.flowerSelections,
+        ...form.itemSelections
+      ].some((item) => !item.quantity || item.quantity <= 0);
+      if (invalidQuantity) {
+        toast({
+          title: 'Lỗi',
+          description: 'Số lượng thành phần phải lớn hơn 0',
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+
+    const imagesString = JSON.stringify(form.imageUrls);
+
     const payload: any = {
       id: data.id,
       name: form.name,
       description: form.description,
       stock: Number(form.stock) || 0,
       price: Number(form.price) || 0,
-      isPublic: true,
-      isCustom: true,
-      type: data.type,
-      vector: form.vector,
-      imageUrls: (form.imageUrls || []).filter(Boolean),
-      mainImageUrl: form.mainImageUrl
+      isActive: form.isActive,
+      productType: data.productType,
+      images: imagesString
     };
 
-    if (data.type === TYPE_PRODUCT.FLOWER || data.type === TYPE_PRODUCT.ITEM) {
+    if (
+      data.productType === TYPE_PRODUCT.FLOWER ||
+      data.productType === TYPE_PRODUCT.ITEM
+    ) {
       payload.categoryIds = (form.categorySelections || []).map(
         (c: any) => c.childId
       );
     }
-    if (data.type === TYPE_PRODUCT.PRODUCT) {
-      payload.children = [
+    if (data.productType === TYPE_PRODUCT.PRODUCT) {
+      payload.compositions = [
         ...form.flowerSelections.map((f: any) => ({
-          childId: f.childId,
+          childProductId: f.childId,
           quantity: Number(f.quantity) || 1
         })),
         ...form.itemSelections.map((i: any) => ({
-          childId: i.childId,
+          childProductId: i.childId,
           quantity: Number(i.quantity) || 1
         }))
       ];
     }
 
     try {
-      await updateProduct(payload as any);
+      const [err] = await updateProduct(payload as any);
+      if (err) {
+        toast({
+          title: 'Thất bại',
+          description: err.message || 'Cập nhật thất bại',
+          variant: 'destructive'
+        });
+        return;
+      }
       toast({
         title: 'Thành công',
         description: 'Cập nhật product thành công',
@@ -154,9 +258,100 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const [err] = await deleteProduct(data.id);
+      if (err) {
+        toast({
+          title: 'Thất bại',
+          description: err.message || 'Xóa thất bại',
+          variant: 'destructive'
+        });
+        return;
+      }
+      toast({
+        title: 'Thành công',
+        description: 'Xóa product thành công',
+        variant: 'default'
+      });
+      setOpenDelete(false);
+    } catch (error: any) {
+      toast({
+        title: 'Thất bại',
+        description: error?.message || 'Xóa thất bại',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleSelect = (
+    type: 'flower' | 'item' | 'category',
+    option: { id: number; name: string }
+  ) => {
+    setForm((prev) => {
+      const key =
+        type === 'flower'
+          ? 'flowerSelections'
+          : type === 'item'
+            ? 'itemSelections'
+            : 'categorySelections';
+      const selections = prev[key as keyof typeof prev] as {
+        childId: number;
+        name: string;
+        quantity?: number;
+      }[];
+      const isSelected = selections.some((s) => s.childId === option.id);
+      if (isSelected) {
+        return {
+          ...prev,
+          [key]: selections.filter((s) => s.childId !== option.id)
+        };
+      }
+      const newItem =
+        type === 'category'
+          ? {
+              childId: option.id,
+              name: option.name
+            }
+          : {
+              childId: option.id,
+              name: option.name,
+              quantity: 1
+            };
+      return {
+        ...prev,
+        [key]: [...selections, newItem]
+      };
+    });
+  };
+
+  const handleQuantityChange = (
+    type: 'flower' | 'item',
+    childId: number,
+    value: number
+  ) => {
+    setForm((prev) => {
+      const selections =
+        type === 'flower' ? prev.flowerSelections : prev.itemSelections;
+      const updatedSelections = selections.map((item) =>
+        item.childId === childId ? { ...item, quantity: value } : item
+      );
+      return {
+        ...prev,
+        [`${type}Selections`]: updatedSelections
+      };
+    });
+  };
+
+  const handleImageUrlsChange = (urls: string | string[]) => {
+    setForm((s) => ({
+      ...s,
+      imageUrls: Array.isArray(urls) ? urls : [urls]
+    }));
+  };
+
   return (
     <div className="flex items-center gap-2">
-      {/* Edit button */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <Button
           className="flex items-center gap-2 bg-orange-600 text-white"
@@ -168,43 +363,33 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               description: data.description || '',
               price: Number(data.price) || 0,
               stock: Number(data.stock) || 0,
-              isPublic: Boolean(data.isPublic ?? true),
-              type: data.type,
-              vector: (data.vector as string) || '',
-              imageUrls: Array.isArray(data.images)
-                ? (data.images as any[])
-                    .slice(1)
-                    .map((img: any) => img?.url)
-                    .filter(Boolean)
-                : data.imageUrls || [],
-              mainImageUrl:
-                Array.isArray(data.images) && data.images.length > 0
-                  ? (data.images[0]?.url as string)
-                  : data.mainImageUrl || '',
-              flowerSelections: (Array.isArray(data.children)
-                ? data.children
+              isActive: Boolean(data.isActive ?? true),
+              productType: data.productType,
+              imageUrls: parseImages(data.images),
+              flowerSelections: (Array.isArray(data.compositions)
+                ? data.compositions
                 : []
               )
-                .filter((c: any) => c?.type === TYPE_PRODUCT.FLOWER)
+                .filter((c: any) => c?.childType === TYPE_PRODUCT.FLOWER)
                 .map((c: any) => ({
-                  childId: c.id,
-                  name: c.name,
+                  childId: c.childId,
+                  name: c.childName,
                   quantity: Number(c.quantity) || 1
                 })),
-              itemSelections: (Array.isArray(data.children)
-                ? data.children
+              itemSelections: (Array.isArray(data.compositions)
+                ? data.compositions
                 : []
               )
-                .filter((c: any) => c?.type === TYPE_PRODUCT.ITEM)
+                .filter((c: any) => c?.childType === TYPE_PRODUCT.ITEM)
                 .map((c: any) => ({
-                  childId: c.id,
-                  name: c.name,
+                  childId: c.childId,
+                  name: c.childName,
                   quantity: Number(c.quantity) || 1
                 })),
               categorySelections: (Array.isArray(data.categories)
                 ? data.categories
                 : []
-              ).map((c: any) => ({ childId: c.id, name: c.name, quantity: 1 }))
+              ).map((c: any) => ({ childId: c.id, name: c.name }))
             });
             setOpenEdit(true);
           }}
@@ -216,7 +401,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <DialogTitle>Chỉnh sửa Product</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEdit} className="flex flex-col gap-4">
-            {/* Loại - chỉ hiển thị, không cho đổi */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="mb-1 block text-sm">Tên sản phẩm</Label>
@@ -231,7 +415,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               </div>
               <div>
                 <Label className="mb-1 block text-sm">Loại</Label>
-                <Input value={data.type} disabled />
+                <Input value={data.productType} disabled />
               </div>
             </div>
 
@@ -273,9 +457,21 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               />
             </div>
 
-            {/* Danh mục: chỉ hiển thị khi là FLOWER/ITEM */}
-            {(data.type === TYPE_PRODUCT.FLOWER ||
-              data.type === TYPE_PRODUCT.ITEM) && (
+            <div className="flex items-center gap-3">
+              <Switch
+                id="isActive"
+                checked={form.isActive}
+                onCheckedChange={(checked) =>
+                  setForm((s) => ({ ...s, isActive: checked }))
+                }
+              />
+              <Label htmlFor="isActive" className="cursor-pointer">
+                Sản phẩm đang hoạt động
+              </Label>
+            </div>
+
+            {(data.productType === TYPE_PRODUCT.FLOWER ||
+              data.productType === TYPE_PRODUCT.ITEM) && (
               <div>
                 <Label className="mb-1 block text-sm">Danh mục</Label>
                 <Popover open={openCategory} onOpenChange={setOpenCategory}>
@@ -306,28 +502,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                               <CommandItem
                                 key={cat.id}
                                 value={cat.name}
-                                onSelect={() => {
-                                  setForm((prev) => {
-                                    const isSel = prev.categorySelections.some(
-                                      (s: any) => s.childId === cat.id
-                                    );
-                                    return {
-                                      ...prev,
-                                      categorySelections: isSel
-                                        ? prev.categorySelections.filter(
-                                            (s: any) => s.childId !== cat.id
-                                          )
-                                        : [
-                                            ...prev.categorySelections,
-                                            {
-                                              childId: cat.id,
-                                              name: cat.name,
-                                              quantity: 1
-                                            }
-                                          ]
-                                    };
-                                  });
-                                }}
+                                onSelect={() =>
+                                  handleSelect('category', {
+                                    id: cat.id,
+                                    name: cat.name
+                                  })
+                                }
                               >
                                 <Check
                                   className={cn(
@@ -345,45 +525,26 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                   </PopoverContent>
                 </Popover>
                 {form.categorySelections.length > 0 && (
-                  <div className="mt-2 text-sm text-gray-600">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {form.categorySelections.map((c: any) => (
-                      <div key={c.childId} className="flex items-center gap-2">
+                      <div
+                        key={c.childId}
+                        className="flex items-center gap-2 rounded-md bg-blue-100 px-3 py-1.5 text-sm"
+                      >
                         <span>{c.name}</span>
-                        <Input
-                          type="number"
-                          className="h-7 w-16 px-2 py-1 text-xs"
-                          value={c.quantity}
-                          min={1}
-                          onChange={(e) => {
-                            const val = Number(e.target.value);
-                            setForm((prev) => ({
-                              ...prev,
-                              categorySelections: prev.categorySelections.map(
-                                (it: any) =>
-                                  it.childId === c.childId
-                                    ? { ...it, quantity: val }
-                                    : it
-                              )
-                            }));
-                          }}
-                          placeholder="Số lượng"
-                        />
                         <Button
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className="ml-2 h-5 w-5 text-xs"
+                          className="h-5 w-5 rounded-full p-0"
                           onClick={() =>
-                            setForm((prev) => ({
-                              ...prev,
-                              categorySelections:
-                                prev.categorySelections.filter(
-                                  (it: any) => it.childId !== c.childId
-                                )
-                            }))
+                            handleSelect('category', {
+                              id: c.childId,
+                              name: c.name
+                            })
                           }
                         >
-                          ✕
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     ))}
@@ -392,8 +553,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               </div>
             )}
 
-            {/* Thành phần: chỉ hiển thị khi là PRODUCT */}
-            {data.type === TYPE_PRODUCT.PRODUCT && (
+            {data.productType === TYPE_PRODUCT.PRODUCT && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="mb-1 block text-sm">Hoa</Label>
@@ -406,9 +566,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                         className="w-full justify-between"
                       >
                         {form.flowerSelections.length > 0
-                          ? `${form.flowerSelections.length} hoa đã chọn`
+                          ? `${form.flowerSelections.length} hoa`
                           : 'Chọn hoa...'}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <Plus className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
@@ -425,29 +585,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                                 <CommandItem
                                   key={flower.id}
                                   value={flower.name}
-                                  onSelect={() => {
-                                    setForm((prev) => {
-                                      const isSel = prev.flowerSelections.some(
-                                        (s: any) => s.childId === flower.id
-                                      );
-                                      return {
-                                        ...prev,
-                                        flowerSelections: isSel
-                                          ? prev.flowerSelections.filter(
-                                              (s: any) =>
-                                                s.childId !== flower.id
-                                            )
-                                          : [
-                                              ...prev.flowerSelections,
-                                              {
-                                                childId: flower.id,
-                                                name: flower.name,
-                                                quantity: 1
-                                              }
-                                            ]
-                                      };
-                                    });
-                                  }}
+                                  onSelect={() =>
+                                    handleSelect('flower', {
+                                      id: flower.id,
+                                      name: flower.name
+                                    })
+                                  }
                                 >
                                   <Check
                                     className={cn(
@@ -465,47 +608,39 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                     </PopoverContent>
                   </Popover>
                   {form.flowerSelections.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
+                    <div className="mt-2 space-y-2">
                       {form.flowerSelections.map((f: any) => (
                         <div
                           key={f.childId}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 rounded-lg border border-pink-200 bg-pink-50 p-2"
                         >
-                          <span>{f.name}</span>
+                          <span className="flex-1 text-sm">{f.name}</span>
                           <Input
                             type="number"
-                            className="h-7 w-16 px-2 py-1 text-xs"
+                            className="h-8 w-20 text-center"
                             value={f.quantity}
                             min={1}
-                            onChange={(e) => {
-                              const val = Number(e.target.value);
-                              setForm((prev) => ({
-                                ...prev,
-                                flowerSelections: prev.flowerSelections.map(
-                                  (it: any) =>
-                                    it.childId === f.childId
-                                      ? { ...it, quantity: val }
-                                      : it
-                                )
-                              }));
-                            }}
-                            placeholder="Số lượng"
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                'flower',
+                                f.childId,
+                                Number(e.target.value)
+                              )
+                            }
                           />
                           <Button
                             type="button"
                             size="icon"
                             variant="ghost"
-                            className="ml-2 h-5 w-5 text-xs"
+                            className="h-7 w-7"
                             onClick={() =>
-                              setForm((prev) => ({
-                                ...prev,
-                                flowerSelections: prev.flowerSelections.filter(
-                                  (it: any) => it.childId !== f.childId
-                                )
-                              }))
+                              handleSelect('flower', {
+                                id: f.childId,
+                                name: f.name
+                              })
                             }
                           >
-                            ✕
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}
@@ -523,9 +658,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                         className="w-full justify-between"
                       >
                         {form.itemSelections.length > 0
-                          ? `${form.itemSelections.length} items đã chọn`
+                          ? `${form.itemSelections.length} items`
                           : 'Chọn items...'}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <Plus className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
@@ -542,28 +677,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                                 <CommandItem
                                   key={item.id}
                                   value={item.name}
-                                  onSelect={() => {
-                                    setForm((prev) => {
-                                      const isSel = prev.itemSelections.some(
-                                        (s: any) => s.childId === item.id
-                                      );
-                                      return {
-                                        ...prev,
-                                        itemSelections: isSel
-                                          ? prev.itemSelections.filter(
-                                              (s: any) => s.childId !== item.id
-                                            )
-                                          : [
-                                              ...prev.itemSelections,
-                                              {
-                                                childId: item.id,
-                                                name: item.name,
-                                                quantity: 1
-                                              }
-                                            ]
-                                      };
-                                    });
-                                  }}
+                                  onSelect={() =>
+                                    handleSelect('item', {
+                                      id: item.id,
+                                      name: item.name
+                                    })
+                                  }
                                 >
                                   <Check
                                     className={cn(
@@ -581,47 +700,39 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                     </PopoverContent>
                   </Popover>
                   {form.itemSelections.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
+                    <div className="mt-2 space-y-2">
                       {form.itemSelections.map((it: any) => (
                         <div
                           key={it.childId}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2"
                         >
-                          <span>{it.name}</span>
+                          <span className="flex-1 text-sm">{it.name}</span>
                           <Input
                             type="number"
-                            className="h-7 w-16 px-2 py-1 text-xs"
+                            className="h-8 w-20 text-center"
                             value={it.quantity}
                             min={1}
-                            onChange={(e) => {
-                              const val = Number(e.target.value);
-                              setForm((prev) => ({
-                                ...prev,
-                                itemSelections: prev.itemSelections.map(
-                                  (x: any) =>
-                                    x.childId === it.childId
-                                      ? { ...x, quantity: val }
-                                      : x
-                                )
-                              }));
-                            }}
-                            placeholder="Số lượng"
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                'item',
+                                it.childId,
+                                Number(e.target.value)
+                              )
+                            }
                           />
                           <Button
                             type="button"
                             size="icon"
                             variant="ghost"
-                            className="ml-2 h-5 w-5 text-xs"
+                            className="h-7 w-7"
                             onClick={() =>
-                              setForm((prev) => ({
-                                ...prev,
-                                itemSelections: prev.itemSelections.filter(
-                                  (x: any) => x.childId !== it.childId
-                                )
-                              }))
+                              handleSelect('item', {
+                                id: it.childId,
+                                name: it.name
+                              })
                             }
                           >
-                            ✕
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}
@@ -631,35 +742,14 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="mb-1 block text-sm">Ảnh chính</Label>
-                <Input
-                  value={form.mainImageUrl}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, mainImageUrl: e.target.value }))
-                  }
-                  placeholder="URL ảnh chính"
-                />
-              </div>
-              <div>
-                <Label className="mb-1 block text-sm">
-                  Ảnh phụ (phân tách bằng dấu phẩy)
-                </Label>
-                <Input
-                  value={(form.imageUrls || []).join(',')}
-                  onChange={(e) =>
-                    setForm((s) => ({
-                      ...s,
-                      imageUrls: e.target.value
-                        .split(',')
-                        .map((x) => x.trim())
-                        .filter(Boolean)
-                    }))
-                  }
-                  placeholder="URL1, URL2, URL3"
-                />
-              </div>
+            <div>
+              <Label className="mb-1 block text-sm">Ảnh sản phẩm</Label>
+              <UploadImage
+                multiple
+                maxFiles={8}
+                onChange={handleImageUrlsChange}
+                defaultValue={form.imageUrls}
+              />
             </div>
 
             <DialogFooter className="mt-2 gap-2">
@@ -685,15 +775,34 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete button - Chưa triển khai */}
-      <Button
-        className="flex items-center gap-2 bg-red-500 text-white"
-        size="icon"
-        type="button"
-        // onClick={} // Có thể triển khai xoá sau
-      >
-        <Trash2Icon className="size-4" />
-      </Button>
+      <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
+        <Button
+          className="flex items-center gap-2 bg-red-500 text-white hover:bg-red-600"
+          size="icon"
+          type="button"
+          onClick={() => setOpenDelete(true)}
+        >
+          <Trash2Icon className="size-4" />
+        </Button>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa sản phẩm "{data.name}"? Hành động này
+              không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

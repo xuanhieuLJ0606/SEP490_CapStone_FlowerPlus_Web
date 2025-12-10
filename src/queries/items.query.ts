@@ -36,3 +36,16 @@ export const useUpdateItem = () => {
     }
   });
 };
+
+export const useDeleteItem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await BaseRequest.Delete(`/products/delete-product?id=${id}`);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+    }
+  });
+};

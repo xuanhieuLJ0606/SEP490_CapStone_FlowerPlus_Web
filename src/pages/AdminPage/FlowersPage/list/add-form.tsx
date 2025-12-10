@@ -24,7 +24,19 @@ export function AddFlowerForm() {
     setError('');
     setSuccess(false);
     if (!form.name.trim()) {
-      setError('Vui lòng nhập tên');
+      setError('Vui lòng nhập tên hoa');
+      return;
+    }
+    if (form.name.length > 255) {
+      setError('Tên hoa không được vượt quá 255 ký tự');
+      return;
+    }
+    if (form.price < 0) {
+      setError('Giá không được âm');
+      return;
+    }
+    if (form.price === 0) {
+      setError('Vui lòng nhập giá');
       return;
     }
     setLoading(true);

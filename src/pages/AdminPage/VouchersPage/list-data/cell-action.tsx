@@ -72,6 +72,54 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!code.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập mã voucher',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (code.length < 3 || code.length > 64) {
+      toast({
+        title: 'Lỗi',
+        description: 'Mã voucher phải từ 3-64 ký tự',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (type === 'PERCENTAGE' && (percent <= 0 || percent > 1)) {
+      toast({
+        title: 'Lỗi',
+        description: 'Phần trăm giảm phải từ 0 đến 1',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (type === 'FIXED' && amount <= 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Số tiền giảm phải lớn hơn 0',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (minOrderValue < 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Giá trị đơn hàng tối thiểu không được âm',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (usageLimit <= 0) {
+      toast({
+        title: 'Lỗi',
+        description: 'Giới hạn sử dụng phải lớn hơn 0',
+        variant: 'destructive'
+      });
+      return;
+    }
     if (!startsAt || !endsAt) {
       toast({
         title: 'Lỗi',
@@ -80,7 +128,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       });
       return;
     }
-
     if (endsAt <= startsAt) {
       toast({
         title: 'Lỗi',

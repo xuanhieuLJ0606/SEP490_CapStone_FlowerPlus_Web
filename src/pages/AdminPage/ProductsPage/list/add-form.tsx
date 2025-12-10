@@ -125,6 +125,22 @@ export function AddProductForm() {
       setError('Vui lòng nhập tên sản phẩm');
       return;
     }
+    if (form.name.length > 255) {
+      setError('Tên sản phẩm không được vượt quá 255 ký tự');
+      return;
+    }
+    if (form.price < 0) {
+      setError('Giá sản phẩm không được âm');
+      return;
+    }
+    if (form.price === 0) {
+      setError('Vui lòng nhập giá sản phẩm');
+      return;
+    }
+    if (form.stock < 0) {
+      setError('Số lượng tồn kho không được âm');
+      return;
+    }
     if (
       (form.productType === TYPE_PRODUCT.FLOWER ||
         form.productType === TYPE_PRODUCT.ITEM) &&
@@ -132,6 +148,25 @@ export function AddProductForm() {
     ) {
       setError('Vui lòng chọn ít nhất một danh mục');
       return;
+    }
+    if (form.productType === TYPE_PRODUCT.PRODUCT) {
+      if (
+        form.flowerSelections.length === 0 &&
+        form.itemSelections.length === 0
+      ) {
+        setError(
+          'Sản phẩm combo phải có ít nhất một thành phần (hoa hoặc item)'
+        );
+        return;
+      }
+      const invalidQuantity = [
+        ...form.flowerSelections,
+        ...form.itemSelections
+      ].some((item) => !item.quantity || item.quantity <= 0);
+      if (invalidQuantity) {
+        setError('Số lượng thành phần phải lớn hơn 0');
+        return;
+      }
     }
     setLoading(true);
 

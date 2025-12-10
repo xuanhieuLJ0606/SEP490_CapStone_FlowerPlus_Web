@@ -22,6 +22,10 @@ export default function Add() {
       setError('Vui lòng nhập tên danh mục');
       return;
     }
+    if (name.length > 255) {
+      setError('Tên danh mục không được vượt quá 255 ký tự');
+      return;
+    }
     setLoading(true);
     try {
       await createCategory({

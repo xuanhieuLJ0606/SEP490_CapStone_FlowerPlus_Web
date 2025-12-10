@@ -49,6 +49,24 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!editName.trim()) {
+      toast({
+        title: '❌ Lỗi',
+        description: 'Vui lòng nhập tên danh mục',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (editName.length > 255) {
+      toast({
+        title: '❌ Lỗi',
+        description: 'Tên danh mục không được vượt quá 255 ký tự',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     const [err] = await updateCategory({
       id: data.id,
       name: editName,
