@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock, Loader2, User } from 'lucide-react';
-import { useLogin } from '@/queries/auth.query';
+import { useAdminLogin } from '@/queries/admin-auth.query';
 import __helpers from '@/helpers';
 import { toast } from '@/components/ui/use-toast';
 
@@ -15,7 +15,7 @@ export default function UserAuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { mutateAsync: login } = useLogin();
+  const { mutateAsync: adminLogin } = useAdminLogin();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -45,15 +45,20 @@ export default function UserAuthForm() {
     }
 
     setIsLoading(true);
-    const [err, data] = await login({ username: email, password });
-    if (!err) {
+    try {
+      const [_, data] = await adminLogin({ username: email, password });
       __helpers.cookie_set('AT', data.accessToken);
+      toast({
+        title: 'Đăng nhập thành công',
+        description: 'Chào mừng bạn đến với trang quản trị',
+        variant: 'default'
+      });
       window.location.href = '/admin/dashboard';
-    } else {
+    } catch (error: any) {
       toast({
         title: 'Đăng nhập không thành công',
-        description: err?.message,
-        variant: 'warning'
+        description: error?.data?.message || 'Bạn không có quyền truy cập',
+        variant: 'destructive'
       });
     }
     setIsLoading(false);

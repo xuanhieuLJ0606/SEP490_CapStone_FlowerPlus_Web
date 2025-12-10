@@ -207,7 +207,7 @@ const ZaloIcon = (props: React.SVGProps<SVGSVGElement>) => (
 // --- Floating stack ---
 export default function FloatingContactButtons() {
   return (
-    <div className="fixed bottom-16 right-10 z-[60] flex flex-col gap-6">
+    <div className="fixed bottom-16 left-6 z-[60] flex flex-col gap-6">
       <RingButton
         href="tel:"
         label="Gọi ngay"
