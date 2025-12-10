@@ -33,19 +33,28 @@ export default function CompleteForgotPassword() {
     e.preventDefault();
     setError('');
 
-    // Basic validation
+    if (!verificationCode.trim()) {
+      setError('Vui lòng nhập mã xác thực');
+      return;
+    }
     if (verificationCode.length !== 6 || !/^\d+$/.test(verificationCode)) {
       setError('Mã xác thực phải là 6 chữ số');
       return;
     }
-
-    if (newPassword.length < 8) {
-      setError('Mật khẩu phải có ít nhất 8 ký tự');
+    if (!newPassword.trim()) {
+      setError('Vui lòng nhập mật khẩu mới');
       return;
     }
-
+    if (newPassword.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+    if (!confirmNewPassword.trim()) {
+      setError('Vui lòng xác nhận mật khẩu');
+      return;
+    }
     if (newPassword !== confirmNewPassword) {
-      setError('Mật khẩu không khớp');
+      setError('Mật khẩu xác nhận không khớp');
       return;
     }
 

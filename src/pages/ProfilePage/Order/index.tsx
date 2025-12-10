@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import CancelOrderButton from '@/components/shared/cancel-order-button';
 
 const OrderHistoryProfile = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
@@ -46,7 +47,8 @@ const OrderHistoryProfile = () => {
     'PREPARING',
     'DELIVERING',
     'DELIVERED',
-    'DELIVERY_FAILED'
+    'DELIVERY_FAILED',
+    'CANCELLED'
   ];
 
   const formatCurrency = (amount) => {
@@ -151,6 +153,14 @@ const OrderHistoryProfile = () => {
         textColor: 'text-red-800',
         borderColor: 'border-red-300',
         gradient: 'from-red-500 to-rose-600'
+      },
+      CANCELLED: {
+        label: 'Đã hủy',
+        icon: X,
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-800',
+        borderColor: 'border-gray-300',
+        gradient: 'from-gray-500 to-gray-600'
       }
     };
     return configs[step] || configs.PENDING_CONFIRMATION;
@@ -271,6 +281,7 @@ const OrderHistoryProfile = () => {
                   <SelectItem value="DELIVERING">Đang giao hàng</SelectItem>
                   <SelectItem value="DELIVERED">Giao thành công</SelectItem>
                   <SelectItem value="DELIVERY_FAILED">Giao thất bại</SelectItem>
+                  <SelectItem value="CANCELLED">Đã hủy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -398,7 +409,7 @@ const OrderHistoryProfile = () => {
                         Trạng thái đơn hàng
                       </h4>
                       <div className="space-y-3">
-                        {timeline.map((timelineItem, idx) => {
+                        {[...timeline].reverse().map((timelineItem, idx) => {
                           const config = getDeliveryStatusConfig(
                             timelineItem.step
                           );
@@ -409,12 +420,10 @@ const OrderHistoryProfile = () => {
                           return (
                             <div
                               key={timelineItem.step}
-                              className={`flex items-start gap-4 rounded-xl border ${config.borderColor} ${
+                              className={`flex items-start gap-4 rounded-xl border ${
                                 isLatest
-                                  ? 'bg-white shadow-md'
-                                  : timelineItem.isCompleted
-                                    ? 'bg-white/50'
-                                    : 'bg-gray-50/50 opacity-50'
+                                  ? 'border-emerald-500 bg-emerald-50/50 shadow-md'
+                                  : 'border-gray-300 bg-white/50'
                               } p-4 transition-all`}
                             >
                               <div
@@ -436,7 +445,7 @@ const OrderHistoryProfile = () => {
                                     {config.label}
                                   </p>
                                   {isLatest && (
-                                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
+                                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
                                       Hiện tại
                                     </span>
                                   )}
@@ -451,11 +460,6 @@ const OrderHistoryProfile = () => {
                                         statusData.eventAt
                                       ).toLocaleString('vi-VN')}
                                     </p>
-                                    {statusData.note && (
-                                      <p className="mt-2 text-sm text-gray-600">
-                                        {statusData.note}
-                                      </p>
-                                    )}
                                     {statusData.location && (
                                       <p className="mt-1 text-xs text-gray-500">
                                         📍 {statusData.location}
@@ -611,6 +615,13 @@ const OrderHistoryProfile = () => {
                           {formatCurrency(order.total)}
                         </span>
                       </div>
+
+                      {/* Cancel Order Button */}
+                      {currentStatus === 'PREPARING' && !order.cancelled && (
+                        <div className="mt-4 border-t border-rose-100 pt-4">
+                          <CancelOrderButton order={order} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

@@ -32,6 +32,8 @@ import __helpers from '@/helpers';
 import { useGetCategories } from '@/queries/categories.query';
 import { useRouter } from '@/routes/hooks';
 import { useGetMyInfo } from '@/queries/auth.query';
+import { useGetListProductByPaging } from '@/queries/product.query';
+import { PRODUCT_TYPE } from '@/constants/data';
 import {
   useAddItemToCart,
   useGetCart,
@@ -58,6 +60,73 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(
+        `/products/search?q=${encodeURIComponent(searchQuery.trim())}`
+      );
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+      setShowSearchDropdown(false);
+    }
+  };
+
+  // Search suggestions query
+  const { data: searchData } = useGetListProductByPaging(
+    1,
+    5, // Limit to 5 suggestions
+    searchQuery.trim(),
+    PRODUCT_TYPE.PRODUCT,
+    undefined
+  );
+
+  // Update search results when data changes
+  useEffect(() => {
+    if (searchData?.listObjects && searchQuery.trim()) {
+      setSearchResults(searchData.listObjects);
+      setShowSearchDropdown(true);
+    } else {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+    }
+  }, [searchData, searchQuery]);
+
+  // Handle clicking on a search suggestion
+  const handleSearchSuggestionClick = (product: any) => {
+    router.push(`/product/${product.id}`);
+    setSearchQuery('');
+    setShowSearchDropdown(false);
+  };
+
+  // Handle search input change
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (!value.trim()) {
+      setShowSearchDropdown(false);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.search-container')) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const { data: infoUser } = useGetMyInfo();
   const controls = useAnimationControls();
@@ -180,21 +249,104 @@ export default function Header() {
 
               {/* Search Bar */}
               <div className="hidden flex-shrink-0 md:flex lg:w-64 xl:w-80">
-                <div className="group relative w-full">
+                <div className="search-container group relative w-full">
                   <input
                     type="text"
                     placeholder="Tìm kiếm hoa, quà tặng..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    onFocus={() => {
+                      if (searchQuery.trim() && searchResults.length > 0) {
+                        setShowSearchDropdown(true);
+                      }
+                    }}
                     className="w-full rounded-full border-2 border-gray-200 py-2.5 pl-4 pr-10 text-sm outline-none transition-all duration-300 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 group-hover:border-purple-300"
                   />
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-2 text-white shadow-lg"
+                    onClick={handleSearch}
+                    className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-2 text-white shadow-lg"
                   >
                     <Search className="h-4 w-4" />
                   </motion.button>
+
+                  {/* Search Dropdown */}
+                  <AnimatePresence>
+                    {showSearchDropdown && searchResults.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-gray-200 bg-white shadow-2xl backdrop-blur-lg"
+                      >
+                        <div className="p-2">
+                          <div className="mb-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Gợi ý tìm kiếm
+                          </div>
+                          {searchResults.map((product: any, index: number) => {
+                            const images = product.images
+                              ? JSON.parse(product.images)
+                              : [];
+                            const firstImage =
+                              images.length > 0 ? images[0] : '';
+
+                            return (
+                              <motion.button
+                                key={product.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                onClick={() =>
+                                  handleSearchSuggestionClick(product)
+                                }
+                                className="flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50"
+                              >
+                                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                  {firstImage ? (
+                                    <img
+                                      src={firstImage}
+                                      alt={product.name}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center">
+                                      <Search className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate font-semibold text-gray-900">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-sm font-medium text-purple-600">
+                                    {__helpers.formatCurrency(product.price)}
+                                  </p>
+                                </div>
+                                <ChevronRight className="h-4 w-4 text-gray-400" />
+                              </motion.button>
+                            );
+                          })}
+
+                          {searchQuery.trim() && (
+                            <motion.button
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                              onClick={() => {
+                                handleSearch();
+                                setShowSearchDropdown(false);
+                              }}
+                              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-purple-200 p-3 text-purple-600 transition-all duration-200 hover:bg-purple-50"
+                            >
+                              <Search className="h-4 w-4" />
+                              Xem tất cả kết quả cho "{searchQuery}"
+                            </motion.button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
@@ -559,10 +711,16 @@ export default function Header() {
                       type="text"
                       placeholder="Tìm kiếm..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchInputChange(e.target.value)}
+                      onKeyPress={handleSearchKeyPress}
                       className="w-full rounded-full border-2 border-gray-200 py-2.5 pl-4 pr-10 outline-none focus:border-purple-400"
                     />
-                    <Search className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <button
+                      onClick={handleSearch}
+                      className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center p-1 text-gray-400 hover:text-purple-600"
+                    >
+                      <Search className="h-4 w-4" />
+                    </button>
                   </div>
                 </motion.div>
 

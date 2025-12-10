@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +16,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGetListProductByPaging } from '@/queries/product.query';
 import { PRODUCT_TYPE } from '@/constants/data';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import __helpers from '@/helpers';
 import { useAddItemToCart } from '@/queries/cart.query';
 import { toast } from '@/components/ui/use-toast';
@@ -240,7 +240,10 @@ export default function ListProduct() {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [likedProducts, setLikedProducts] = useState<Set<number>>(new Set());
 
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState(() => {
+    // Get search query from URL params if exists
+    return searchParams.get('q') || '';
+  });
   const [priceOption, setPriceOption] = useState<PriceOption>('ALL');
   const [customPriceRange, setCustomPriceRange] = useState<CustomPriceRange>({
     min: '',
@@ -250,6 +253,15 @@ export default function ListProduct() {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   const { categoryId } = useParams();
+  const [searchParams] = useSearchParams();
+
+  // Update search keyword when URL params change
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    if (queryParam) {
+      setSearchKeyword(queryParam);
+    }
+  }, [searchParams]);
   const { data: resProducts } = useGetListProductByPaging(
     1,
     FETCH_SIZE,
@@ -511,7 +523,9 @@ export default function ListProduct() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="mb-4 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-5xl font-bold text-transparent"
           >
-            Danh sách sản phẩm
+            {searchParams.get('q')
+              ? `Kết quả tìm kiếm: "${searchParams.get('q')}"`
+              : 'Danh sách sản phẩm'}
           </motion.h1>
         </motion.div>
 

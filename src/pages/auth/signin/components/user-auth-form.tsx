@@ -18,6 +18,32 @@ export default function UserAuthForm() {
   const { mutateAsync: login } = useLogin();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập username',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (!password.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập mật khẩu',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (password.length < 6) {
+      toast({
+        title: 'Lỗi',
+        description: 'Mật khẩu phải có ít nhất 6 ký tự',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsLoading(true);
     const [err, data] = await login({ username: email, password });
     if (!err) {

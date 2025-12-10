@@ -63,6 +63,10 @@ export default function AppRouter() {
           element: <ListProduct />
         },
         {
+          path: '/products/search',
+          element: <ListProduct />
+        },
+        {
           path: '/profile',
           element: <ProfilePage />
         },
