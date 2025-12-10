@@ -40,7 +40,7 @@ export function OverViewTab() {
   const page = Number(searchParams.get('page') || 1);
   const pageLimit = Number(searchParams.get('limit') || 10);
 
-  const { data: res, isPending } = useGetCategories();
+  const { data: res, isPending } = useGetCategories(false);
 
   const { pagedData, totalRecords, pageCount } = React.useMemo(() => {
     if (!res?.data || !Array.isArray(res.data)) {

@@ -709,7 +709,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
               >
                 <Button variant="outline" size="lg" className="gap-2" asChild>
-                  <Link to={`/category/${category.id}`}>
+                  <Link to={`/products/${category.id}`}>
                     Xem thêm {category.products.length - 8} sản phẩm
                     <ChevronRight className="h-4 w-4" />
                   </Link>

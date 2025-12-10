@@ -240,6 +240,9 @@ export default function ListProduct() {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [likedProducts, setLikedProducts] = useState<Set<number>>(new Set());
 
+  const { categoryId } = useParams();
+  const [searchParams] = useSearchParams();
+
   const [searchKeyword, setSearchKeyword] = useState(() => {
     // Get search query from URL params if exists
     return searchParams.get('q') || '';
@@ -251,9 +254,6 @@ export default function ListProduct() {
   });
 
   const [showMobileFilter, setShowMobileFilter] = useState(false);
-
-  const { categoryId } = useParams();
-  const [searchParams] = useSearchParams();
 
   // Update search keyword when URL params change
   useEffect(() => {
