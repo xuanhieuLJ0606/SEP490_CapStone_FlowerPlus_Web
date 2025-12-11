@@ -15,7 +15,7 @@ import {
   Package
 } from 'lucide-react';
 import { useGetListProductToView } from '@/queries/product.query';
-import { Link } from 'react-router-dom';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAddItemToCart } from '@/queries/cart.query';
@@ -293,7 +293,7 @@ export default function HomePage() {
         whileHover="hover"
         className="group relative transform overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-xl"
       >
-        <Link to={`/product/${product.id}`}>
+        <a href={`/product/${product.id}`}>
           {/* Image Container */}
           <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50">
             <motion.img
@@ -355,15 +355,15 @@ export default function HomePage() {
               </motion.button>
             </motion.div>
           </div>
-        </Link>
+        </a>
 
         {/* Product Info */}
         <div className="p-4">
-          <Link to={`/product/${product.id}`}>
+          <a href={`/product/${product.id}`}>
             <motion.h3 className="mb-2 line-clamp-2 min-h-[3rem] font-semibold text-gray-800 transition-colors hover:text-rose-600">
               {product.name}
             </motion.h3>
-          </Link>
+          </a>
 
           {/* Compositions Info */}
           {product.compositions && product.compositions.length > 0 && (
@@ -709,10 +709,10 @@ export default function HomePage() {
                 viewport={{ once: true }}
               >
                 <Button variant="outline" size="lg" className="gap-2" asChild>
-                  <Link to={`/products/${category.id}`}>
+                  <a href={`/products/${category.id}`}>
                     Xem thêm {category.products.length - 8} sản phẩm
                     <ChevronRight className="h-4 w-4" />
-                  </Link>
+                  </a>
                 </Button>
               </motion.div>
             )}
