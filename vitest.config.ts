@@ -1,15 +1,17 @@
-import path from 'path';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
-import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts']
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
     }
-  },
-  server: {
-    port: 3435
   }
 });

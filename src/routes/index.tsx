@@ -32,8 +32,14 @@ const UserManagementPage = lazy(
   () => import('@/pages/AdminPage/UserManagmentPage/index')
 );
 const VouchersPage = lazy(() => import('@/pages/AdminPage/VouchersPage/index'));
+const PersonalVouchersPage = lazy(
+  () => import('@/pages/AdminPage/PersonalVouchersPage/index')
+);
 const RefundManagementPage = lazy(
   () => import('@/pages/AdminPage/RefundManagementPage/index')
+);
+const FavoritesPage = lazy(
+  () => import('@/components/favorites/FavoritesPage')
 );
 
 // ----------------------------------------------------------------------
@@ -69,6 +75,10 @@ export default function AppRouter() {
         {
           path: '/profile',
           element: <ProfilePage />
+        },
+        {
+          path: '/favorites',
+          element: <FavoritesPage />
         },
         {
           path: '/custom-product',
@@ -128,6 +138,10 @@ export default function AppRouter() {
         {
           path: '/admin/vouchers',
           element: <VouchersPage />
+        },
+        {
+          path: '/admin/personal-vouchers',
+          element: <PersonalVouchersPage />
         },
         {
           path: '/admin/refunds',
