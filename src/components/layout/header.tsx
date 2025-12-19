@@ -8,7 +8,8 @@ import {
   Search,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -632,6 +633,15 @@ export default function Header() {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link
+                            to="/favorites"
+                            className="flex w-full items-center gap-2"
+                          >
+                            <Heart className="h-4 w-4" />
+                            Yêu thích
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
                             to="/support"
                             className="flex w-full items-center gap-2"
                           >
@@ -746,16 +756,28 @@ export default function Header() {
                   )}
                 </nav>
 
-                {/* Mobile Custom Product Button */}
+                {/* Mobile User Actions */}
                 {infoUser && (
                   <motion.div
                     initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
+                    className="mt-4 space-y-2"
                   >
                     <Button
                       variant="outline"
-                      className="mt-4 w-full bg-rose-500 text-white hover:bg-rose-600"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        router.push('/favorites');
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Heart className="mr-2 h-4 w-4" />
+                      Yêu thích
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start bg-rose-500 text-white hover:bg-rose-600"
                       onClick={() => {
                         router.push('/custom-product');
                         setMobileMenuOpen(false);

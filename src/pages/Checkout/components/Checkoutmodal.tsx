@@ -3,13 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   MapPin,
-  User,
-  Phone,
   FileText,
   ChevronRight,
   ShoppingBag,
   CheckCircle2,
-  Plus,
   Check,
   Clock,
   Ticket,
@@ -21,9 +18,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useGetVouchers } from '@/queries/voucher.query';
+import AddressSelection from '@/components/checkout/address-selection';
 
 interface Address {
   id: number;
@@ -80,18 +77,7 @@ export default function CheckoutModal({
   isPending
 }: CheckoutModalProps) {
   const [step, setStep] = useState(1);
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
-    userAddresses.find((addr) => addr.default)?.id || null
-  );
-  const [isNewAddress, setIsNewAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    recipientName: '',
-    phoneNumber: '',
-    address: '',
-    province: '',
-    district: '',
-    ward: ''
-  });
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [note, setNote] = useState('');
   const [requestDeliveryTime, setRequestDeliveryTime] = useState('');
   const [selectedVoucherCode, setSelectedVoucherCode] = useState<string | null>(
@@ -182,57 +168,37 @@ export default function CheckoutModal({
   const finalAmount = totalAmount - discountAmount;
 
   const handleNext = () => {
-    if (isNewAddress) {
-      if (
-        !newAddress.recipientName ||
-        !newAddress.phoneNumber ||
-        !newAddress.address
-      ) {
-        alert('Vui lòng điền đầy đủ thông tin giao hàng');
-        return;
-      }
-    } else {
-      if (!selectedAddressId) {
-        alert('Vui lòng chọn địa chỉ giao hàng');
-        return;
-      }
+    if (!selectedAddress) {
+      alert('Vui lòng chọn địa chỉ giao hàng');
+      return;
     }
     setStep(2);
   };
 
   const handleConfirmCheckout = () => {
-    const selectedAddress = userAddresses.find(
-      (addr) => addr.id === selectedAddressId
-    );
+    if (!selectedAddress) {
+      alert('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
 
-    const baseData = {
+    const checkoutData = {
       note: note,
       requestDeliveryTime: requestDeliveryTime || null,
-      voucherCode: selectedVoucherCode, // Thêm voucher code vào payload
+      voucherCode: selectedVoucherCode,
       returnUrl: window.location.origin + '/checkout/success',
-      cancelUrl: window.location.origin + '/checkout/cancel'
+      cancelUrl: window.location.origin + '/checkout/cancel',
+      shippingAddress:
+        selectedAddress.address?.specificAddress || selectedAddress.address,
+      phoneNumber: selectedAddress.phone,
+      recipientName: selectedAddress.name
     };
-
-    const checkoutData = isNewAddress
-      ? {
-          ...baseData,
-          shippingAddress: `${newAddress.address}, ${newAddress.ward}, ${newAddress.district}, ${newAddress.province}`,
-          phoneNumber: newAddress.phoneNumber,
-          recipientName: newAddress.recipientName
-        }
-      : {
-          ...baseData,
-          shippingAddress: `${selectedAddress?.address}, ${selectedAddress?.ward}, ${selectedAddress?.district}, ${selectedAddress?.province}`,
-          phoneNumber: selectedAddress?.phoneNumber,
-          recipientName: selectedAddress?.recipientName
-        };
 
     onCheckout(checkoutData);
   };
 
   const handleClose = () => {
     setStep(1);
-    setIsNewAddress(false);
+    setSelectedAddress(null);
     setNote('');
     setRequestDeliveryTime('');
     setSelectedVoucherCode(null);
@@ -317,192 +283,13 @@ export default function CheckoutModal({
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-4"
+                  className="space-y-6"
                 >
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Chọn địa chỉ giao hàng
-                    </h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsNewAddress(!isNewAddress)}
-                      className="gap-2 border-rose-300 text-rose-600 hover:bg-rose-50"
-                    >
-                      <Plus className="h-4 w-4" />
-                      {isNewAddress
-                        ? 'Chọn địa chỉ có sẵn'
-                        : 'Thêm địa chỉ mới'}
-                    </Button>
-                  </div>
-
-                  {!isNewAddress ? (
-                    <RadioGroup
-                      value={selectedAddressId?.toString()}
-                      onValueChange={(value) =>
-                        setSelectedAddressId(Number(value))
-                      }
-                      className="space-y-3"
-                    >
-                      {userAddresses.map((address) => (
-                        <div
-                          key={address.id}
-                          className={`relative rounded-xl border-2 p-4 transition-all hover:shadow-md ${
-                            selectedAddressId === address.id
-                              ? 'border-rose-500 bg-rose-50'
-                              : 'border-gray-200 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <RadioGroupItem
-                              value={address.id.toString()}
-                              id={`address-${address.id}`}
-                              className="mt-1"
-                            />
-                            <Label
-                              htmlFor={`address-${address.id}`}
-                              className="flex-1 cursor-pointer"
-                            >
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-gray-600" />
-                                  <span className="font-semibold text-gray-900">
-                                    {address.recipientName}
-                                  </span>
-                                  {address.default && (
-                                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
-                                      Mặc định
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Phone className="h-4 w-4" />
-                                  {address.phoneNumber}
-                                </div>
-                                <div className="flex items-start gap-2 text-sm text-gray-600">
-                                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                                  <span>
-                                    {address.address}, {address.ward},{' '}
-                                    {address.district}, {address.province}
-                                  </span>
-                                </div>
-                              </div>
-                            </Label>
-                            {selectedAddressId === address.id && (
-                              <CheckCircle2 className="h-5 w-5 text-rose-600" />
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  ) : (
-                    <div className="space-y-4 rounded-xl border-2 border-rose-200 bg-rose-50/50 p-4">
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-sm font-medium">
-                          <User className="h-4 w-4" />
-                          Tên người nhận *
-                        </Label>
-                        <Input
-                          value={newAddress.recipientName}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              recipientName: e.target.value
-                            })
-                          }
-                          placeholder="Nhập tên người nhận"
-                          className="border-rose-200 focus:border-rose-400"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-sm font-medium">
-                          <Phone className="h-4 w-4" />
-                          Số điện thoại *
-                        </Label>
-                        <Input
-                          value={newAddress.phoneNumber}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              phoneNumber: e.target.value
-                            })
-                          }
-                          placeholder="Nhập số điện thoại"
-                          className="border-rose-200 focus:border-rose-400"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">
-                            Tỉnh/Thành phố
-                          </Label>
-                          <Input
-                            value={newAddress.province}
-                            onChange={(e) =>
-                              setNewAddress({
-                                ...newAddress,
-                                province: e.target.value
-                              })
-                            }
-                            placeholder="Tỉnh/TP"
-                            className="border-rose-200 focus:border-rose-400"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">
-                            Quận/Huyện
-                          </Label>
-                          <Input
-                            value={newAddress.district}
-                            onChange={(e) =>
-                              setNewAddress({
-                                ...newAddress,
-                                district: e.target.value
-                              })
-                            }
-                            placeholder="Quận/Huyện"
-                            className="border-rose-200 focus:border-rose-400"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">
-                            Phường/Xã
-                          </Label>
-                          <Input
-                            value={newAddress.ward}
-                            onChange={(e) =>
-                              setNewAddress({
-                                ...newAddress,
-                                ward: e.target.value
-                              })
-                            }
-                            placeholder="Phường/Xã"
-                            className="border-rose-200 focus:border-rose-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-sm font-medium">
-                          <MapPin className="h-4 w-4" />
-                          Địa chỉ chi tiết *
-                        </Label>
-                        <Textarea
-                          value={newAddress.address}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              address: e.target.value
-                            })
-                          }
-                          placeholder="Số nhà, tên đường..."
-                          className="min-h-[80px] border-rose-200 focus:border-rose-400"
-                        />
-                      </div>
-                    </div>
-                  )}
+                  {/* Address Selection */}
+                  <AddressSelection
+                    onAddressSelect={setSelectedAddress}
+                    selectedAddressId={selectedAddress?.id}
+                  />
 
                   {/* Ghi chú đơn hàng */}
                   <div className="space-y-2">
@@ -555,47 +342,21 @@ export default function CheckoutModal({
                       <MapPin className="h-5 w-5 text-rose-600" />
                       Thông tin giao hàng
                     </h4>
-                    {isNewAddress ? (
+                    {selectedAddress && (
                       <div className="space-y-2 text-sm text-gray-700">
                         <p>
-                          <strong>Người nhận:</strong>{' '}
-                          {newAddress.recipientName}
+                          <strong>Người nhận:</strong> {selectedAddress.name}
                         </p>
                         <p>
                           <strong>Số điện thoại:</strong>{' '}
-                          {newAddress.phoneNumber}
+                          {selectedAddress.phone}
                         </p>
                         <p>
-                          <strong>Địa chỉ:</strong> {newAddress.address},{' '}
-                          {newAddress.ward}, {newAddress.district},{' '}
-                          {newAddress.province}
+                          <strong>Địa chỉ:</strong>{' '}
+                          {selectedAddress.address?.specificAddress ||
+                            selectedAddress.address}
                         </p>
                       </div>
-                    ) : (
-                      (() => {
-                        const selectedAddress = userAddresses.find(
-                          (addr) => addr.id === selectedAddressId
-                        );
-                        return (
-                          <div className="space-y-2 text-sm text-gray-700">
-                            <p>
-                              <strong>Người nhận:</strong>{' '}
-                              {selectedAddress?.recipientName}
-                            </p>
-                            <p>
-                              <strong>Số điện thoại:</strong>{' '}
-                              {selectedAddress?.phoneNumber}
-                            </p>
-                            <p>
-                              <strong>Địa chỉ:</strong>{' '}
-                              {selectedAddress?.address},{' '}
-                              {selectedAddress?.ward},{' '}
-                              {selectedAddress?.district},{' '}
-                              {selectedAddress?.province}
-                            </p>
-                          </div>
-                        );
-                      })()
                     )}
 
                     {(note || requestDeliveryTime) && (

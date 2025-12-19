@@ -11,7 +11,6 @@ import {
   CarouselItem
 } from '@/components/ui/carousel';
 import {
-  Heart,
   Share2,
   Truck,
   ShieldCheck,
@@ -21,6 +20,7 @@ import {
   Loader2,
   ShoppingCart
 } from 'lucide-react';
+import { LargeFavoriteButton } from '@/components/favorites/FavoriteButton';
 import { useGetProductById } from '@/queries/product.query';
 import { toast } from '@/components/ui/use-toast';
 import { useAddItemToCart } from '@/queries/cart.query';
@@ -143,31 +143,31 @@ export default function ProductDetailPage() {
   const discountPercent = 0;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto mb-[10%] p-4">
       {/* Top banner / trust badges */}
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-pink-50 to-white p-3">
-          <Sparkles className="h-5 w-5" />
-          <p className="text-sm">
+      <div className="mb-4 grid gap-2 sm:grid-cols-3">
+        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-pink-50 to-white p-2">
+          <Sparkles className="h-4 w-4" />
+          <p className="text-xs">
             <span className="font-medium">Hoa tươi mỗi ngày</span> – cắm mới
             theo đơn
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-rose-50 to-white p-3">
-          <Truck className="h-5 w-5" />
-          <p className="text-sm">
+        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-rose-50 to-white p-2">
+          <Truck className="h-4 w-4" />
+          <p className="text-xs">
             <span className="font-medium">Giao nhanh 2–4 giờ</span> nội thành
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-blue-50 to-white p-3">
-          <ShieldCheck className="h-5 w-5" />
-          <p className="text-sm">
+        <div className="flex items-center gap-2 rounded-lg border bg-gradient-to-br from-blue-50 to-white p-2">
+          <ShieldCheck className="h-4 w-4" />
+          <p className="text-xs">
             <span className="font-medium">Đổi miễn phí</span> nếu héo trong 24h
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Left: Image gallery */}
         <div className="lg:col-span-6">
           <div className="relative">
@@ -200,20 +200,19 @@ export default function ProductDetailPage() {
                   </Badge>
                 )}
               </div>
-              <div className="pointer-events-none absolute right-3 top-3 flex gap-2">
+              <div className="pointer-events-none absolute right-2 top-2 flex gap-1">
+                <div className="pointer-events-auto">
+                  <LargeFavoriteButton
+                    productId={product.id}
+                    showCount={true}
+                  />
+                </div>
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="pointer-events-auto h-9 w-9 rounded-full"
+                  className="pointer-events-auto h-8 w-8 rounded-full"
                 >
-                  <Heart className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="pointer-events-auto h-9 w-9 rounded-full"
-                >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
@@ -237,7 +236,7 @@ export default function ProductDetailPage() {
                           <img
                             src={img}
                             alt={`${product.name} - Ảnh ${idx + 1}`}
-                            className="h-20 w-full object-cover transition-transform hover:scale-105"
+                            className="h-16 w-full object-cover transition-transform hover:scale-105"
                           />
                         </button>
                       </CarouselItem>
@@ -250,38 +249,42 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Right: Content */}
-        <div className="space-y-5 lg:col-span-6">
+        <div className="space-y-4 lg:col-span-6">
           {/* Breadcrumb + Title */}
           <div>
-            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+            <nav className="flex items-center gap-1 text-xs text-muted-foreground">
               <Link to="/" className="hover:text-foreground">
                 Home
               </Link>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3" />
               <span>Chi tiết</span>
             </nav>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight md:text-3xl">
+            <h1 className="mt-2 text-xl font-semibold leading-tight md:text-2xl">
               {product.name}
             </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-1">
               {product.productType && (
-                <Badge variant="secondary">{product.productType}</Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {product.productType}
+                </Badge>
               )}
               {product.stock !== undefined && (
-                <Badge variant="outline">Còn {product.stock} sản phẩm</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Còn {product.stock} sản phẩm
+                </Badge>
               )}
             </div>
           </div>
 
           {/* Price block */}
-          <div className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+          <div className="rounded-xl border bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
               {hasDiscount && (
-                <span className="text-muted-foreground line-through">
+                <span className="text-sm text-muted-foreground line-through">
                   {formatVND(product.originalPrice)} ₫
                 </span>
               )}
-              <span className="text-3xl font-extrabold tracking-tight text-rose-600">
+              <span className="text-2xl font-extrabold tracking-tight text-rose-600 md:text-3xl">
                 {formatVND(product.price)} ₫
               </span>
               {hasDiscount && (
@@ -290,7 +293,7 @@ export default function ProductDetailPage() {
                 </Badge>
               )}
             </div>
-            <div className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-2 text-xs text-muted-foreground">
               Giá đã bao gồm giấy gói & thiệp (viết tay theo yêu cầu).
             </div>
           </div>
@@ -299,8 +302,8 @@ export default function ProductDetailPage() {
 
           {/* Key info */}
           <Card>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+            <CardContent className="p-3">
+              <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
                 <div>
                   <div className="text-muted-foreground">Tình trạng</div>
                   <div className="font-medium">
@@ -330,14 +333,14 @@ export default function ProductDetailPage() {
           {/* Compositions */}
           {compositionsWithImages.length > 0 && (
             <div>
-              <h3 className="mb-2 font-medium">Thành phần sản phẩm</h3>
-              <div className="grid grid-cols-1 gap-3">
+              <h3 className="mb-2 text-sm font-medium">Thành phần sản phẩm</h3>
+              <div className="grid grid-cols-1 gap-2">
                 {compositionsWithImages.map((comp: any, idx: number) => (
                   <Card key={idx} className="overflow-hidden">
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-3">
+                    <CardContent className="p-2">
+                      <div className="flex items-start gap-2">
                         {comp.parsedImages && comp.parsedImages.length > 0 && (
-                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border">
+                          <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border">
                             <img
                               src={comp.parsedImages[0]}
                               alt={comp.childName}
@@ -348,16 +351,16 @@ export default function ProductDetailPage() {
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="font-medium">
+                              <div className="text-sm font-medium">
                                 {comp.childName}
                               </div>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-xs text-muted-foreground">
                                 {PRODUCT_TYPE_MEAN[comp.childType]} • Số lượng:{' '}
                                 {comp.quantity}
                               </div>
                             </div>
                             {comp.childPrice && (
-                              <div className="text-sm font-semibold text-muted-foreground">
+                              <div className="text-xs font-semibold text-muted-foreground">
                                 Giá lẻ: {formatVND(comp.childPrice)} ₫
                               </div>
                             )}
@@ -372,19 +375,19 @@ export default function ProductDetailPage() {
           )}
 
           {/* CTA */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Button
-              size="lg"
-              className="flex h-12 flex-1 items-center gap-2 bg-rose-500 text-base"
+              size="default"
+              className="flex h-10 flex-1 items-center gap-2 bg-rose-500 text-sm"
               onClick={() => handleAddToCart(product.id)}
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-4 w-4" />
               Thêm vào giỏ hàng
             </Button>
             <Button
-              size="lg"
+              size="default"
               variant="secondary"
-              className="h-12 flex-1 text-base"
+              className="h-10 flex-1 text-sm"
             >
               Mua ngay
             </Button>
@@ -393,26 +396,34 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="desc" className="mt-10">
-        <TabsList>
-          <TabsTrigger value="desc">Mô tả</TabsTrigger>
-          <TabsTrigger value="policy">Chính sách hoa tươi</TabsTrigger>
-          <TabsTrigger value="shipping">Giao/nhận</TabsTrigger>
+      <Tabs defaultValue="desc" className="mt-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="desc" className="text-xs">
+            Mô tả
+          </TabsTrigger>
+          <TabsTrigger value="policy" className="text-xs">
+            Chính sách hoa tươi
+          </TabsTrigger>
+          <TabsTrigger value="shipping" className="text-xs">
+            Giao/nhận
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="desc" className="prose max-w-none">
           {product.description ? (
-            <p>{product.description}</p>
+            <p className="text-sm">{product.description}</p>
           ) : (
-            <p className="text-muted-foreground">Chưa có mô tả sản phẩm.</p>
+            <p className="text-sm text-muted-foreground">
+              Chưa có mô tả sản phẩm.
+            </p>
           )}
-          <ul className="mt-2 list-disc pl-6 text-sm text-muted-foreground">
+          <ul className="mt-2 list-disc pl-4 text-xs text-muted-foreground">
             <li>Thiết kế phối màu tinh tế, phù hợp nhiều dịp tặng.</li>
             <li>Hoa tuyển chọn, độ nở đẹp, cắm theo layout mẫu.</li>
             <li>Tặng thiệp viết tay & gói quà cao cấp.</li>
           </ul>
         </TabsContent>
         <TabsContent value="policy">
-          <div className="text-sm leading-6">
+          <div className="text-xs leading-5">
             <p className="mb-2">
               <span className="font-medium">Đổi mới trong 24 giờ</span> nếu hoa
               bị dập/héo do vận chuyển.
@@ -427,7 +438,7 @@ export default function ProductDetailPage() {
           </div>
         </TabsContent>
         <TabsContent value="shipping">
-          <div className="text-sm leading-6">
+          <div className="text-xs leading-5">
             <p>
               Giao nội thành trong <span className="font-medium">2–4 giờ</span>,
               ngoại tỉnh <span className="font-medium">1–3 ngày</span>.

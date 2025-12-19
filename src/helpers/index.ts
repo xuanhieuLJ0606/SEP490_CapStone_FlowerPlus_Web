@@ -113,13 +113,6 @@ class helpers {
     return this.getUserRole() === 'ADMIN';
   }
 
-  getUserId() {
-    const token = this.cookie_get('AT');
-    if (!token) return '';
-    const userDetail = this.decodeToken(token);
-    return userDetail.UserId;
-  }
-
   getUserEmail() {
     const token = this.cookie_get('AT');
     if (!token) return '';
