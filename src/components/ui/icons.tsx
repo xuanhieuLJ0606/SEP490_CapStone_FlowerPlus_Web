@@ -79,6 +79,7 @@ export const Icons = {
   ticket: Ticket, // Vé tham gia
   product: LucideShoppingBag, // Sản phẩm
   voucher: Gift, // Voucher
+  gift: Gift, // Voucher cá nhân
   lottery: Award, // Vòng quay may mắn
   document: FileText, // Tài liệu sự kiện
   photoGallery: Image, // Ảnh sự kiện

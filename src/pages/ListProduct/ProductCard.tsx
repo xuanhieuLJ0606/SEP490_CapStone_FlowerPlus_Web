@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import FavoriteButton from '@/components/favorites/FavoriteButton';
 
 interface ProductCardProps {
   id: number;
@@ -23,7 +24,6 @@ export default function ProductCard({
   image,
   index
 }: ProductCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const imageVariants = {
@@ -58,19 +58,10 @@ export default function ProductCard({
             )}
           </motion.div>
 
-          {/* Like Button */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsLiked(!isLiked)}
-            className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-3 backdrop-blur-sm transition-all hover:bg-white"
-          >
-            <Heart
-              size={20}
-              className={
-                isLiked ? 'fill-primary stroke-primary' : 'stroke-foreground'
-              }
-            />
-          </motion.button>
+          {/* Favorite Button */}
+          <div className="absolute right-4 top-4 z-10">
+            <FavoriteButton productId={id} size="md" variant="default" />
+          </div>
 
           {/* Badge */}
           {stock <= 5 && stock > 0 && (

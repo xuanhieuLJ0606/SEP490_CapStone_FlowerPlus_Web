@@ -131,6 +131,7 @@ export default function Chatbot() {
         userId: 1,
         imageUrl: imageToSend || undefined
       });
+      console.log(response);
 
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,

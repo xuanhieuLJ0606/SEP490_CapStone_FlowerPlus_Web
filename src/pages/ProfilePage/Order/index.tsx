@@ -15,9 +15,15 @@ import {
   Loader2,
   Image as ImageIcon,
   X,
-  ExternalLinkIcon
+  ExternalLinkIcon,
+  User,
+  Phone,
+  MapPin,
+  Eye,
+  Flower2
 } from 'lucide-react';
 import { useGetOrdersByUser } from '@/queries/order.query';
+import { useGetProductById } from '@/queries/product.query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +33,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import CancelOrderButton from '@/components/shared/cancel-order-button';
 
 const OrderHistoryProfile = () => {
@@ -35,10 +48,24 @@ const OrderHistoryProfile = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+  const [showProductModal, setShowProductModal] = useState(false);
   const itemsPerPage = 5;
 
   const { data: resOrders, isPending } = useGetOrdersByUser();
   const orders = resOrders?.data || [];
+
+  // Query for product details when modal is opened
+  const { data: productData, isLoading: isLoadingProduct } = useGetProductById(
+    selectedProductId,
+    {
+      enabled: !!selectedProductId && showProductModal
+    }
+  );
+
+  console.log(productData);
 
   // Định nghĩa thứ tự các bước giao hàng (từ nhỏ đến lớn)
 
@@ -215,6 +242,11 @@ const OrderHistoryProfile = () => {
   const handleStatusChange = (value) => {
     setStatusFilter(value);
     setCurrentPage(1);
+  };
+
+  const handleProductClick = (productId: number) => {
+    setSelectedProductId(productId);
+    setShowProductModal(true);
   };
 
   if (isPending) {
@@ -402,6 +434,85 @@ const OrderHistoryProfile = () => {
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div className="border-t border-rose-100 bg-white">
+                    {/* Order Information */}
+                    <div className="border-b border-rose-100 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 p-6">
+                      <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
+                        <User className="h-4 w-4 text-blue-600" />
+                        Thông tin đơn hàng
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {/* Recipient Information */}
+                        <div className="rounded-xl border border-blue-200 bg-white/80 p-4">
+                          <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <User className="h-4 w-4 text-blue-600" />
+                            Thông tin người nhận
+                          </h5>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-gray-900">
+                                {order.recipientName || 'Chưa cập nhật'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-600">
+                                {order.phoneNumber || 'Chưa cập nhật'}
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <MapPin className="mt-0.5 h-4 w-4 text-gray-400" />
+                              <span className="leading-relaxed text-gray-600">
+                                {order.shippingAddress || 'Chưa cập nhật'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Details */}
+                        <div className="rounded-xl border border-blue-200 bg-white/80 p-4">
+                          <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <Package className="h-4 w-4 text-blue-600" />
+                            Chi tiết đơn hàng
+                          </h5>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">
+                                Mã đơn hàng:
+                              </span>
+                              <span className="font-medium text-gray-900">
+                                #{order.orderCode}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Ngày đặt:</span>
+                              <span className="font-medium text-gray-900">
+                                {new Date(order.createdAt).toLocaleDateString(
+                                  'vi-VN'
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tổng tiền:</span>
+                              <span className="font-bold text-rose-600">
+                                {formatCurrency(order.total)}
+                              </span>
+                            </div>
+                            {order.note && (
+                              <div className="border-t border-blue-100 pt-2">
+                                <span className="text-xs text-gray-600">
+                                  Ghi chú:
+                                </span>
+                                <p className="mt-1 text-sm italic text-gray-900">
+                                  "{order.note}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Delivery Status Timeline */}
                     <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50/30 to-pink-50/30 p-6">
                       <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
@@ -528,9 +639,20 @@ const OrderHistoryProfile = () => {
                               </div>
 
                               <div className="flex-1">
-                                <h5 className="font-semibold text-gray-900">
-                                  {item.productName}
-                                </h5>
+                                <div className="flex items-center gap-2">
+                                  <h5 className="font-semibold text-gray-900">
+                                    {item.productName}
+                                  </h5>
+                                  <button
+                                    onClick={() =>
+                                      handleProductClick(item.productId)
+                                    }
+                                    className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-200"
+                                  >
+                                    <Eye className="h-3 w-3" />
+                                    Chi tiết
+                                  </button>
+                                </div>
                                 <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-gray-600">
                                   <span>
                                     SL:{' '}
@@ -708,6 +830,254 @@ const OrderHistoryProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Product Detail Modal */}
+      <Dialog
+        open={showProductModal}
+        onOpenChange={(open) => {
+          setShowProductModal(open);
+          if (!open) {
+            setSelectedProductId(null);
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
+              <Flower2 className="h-6 w-6 text-rose-600" />
+              Chi tiết sản phẩm
+            </DialogTitle>
+          </DialogHeader>
+
+          {isLoadingProduct ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="mx-auto h-12 w-12 animate-spin text-rose-600" />
+                <p className="mt-4 text-gray-600">
+                  Đang tải thông tin sản phẩm...
+                </p>
+              </div>
+            </div>
+          ) : productData?.data ? (
+            <div className="space-y-6">
+              {/* Product Basic Info */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="aspect-square overflow-hidden rounded-xl bg-gray-100">
+                    {(() => {
+                      try {
+                        const images = JSON.parse(
+                          productData.data.images || '[]'
+                        );
+                        return images && images.length > 0 ? (
+                          <img
+                            src={images[0]}
+                            alt={productData.data.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <Package className="h-16 w-16 text-gray-400" />
+                          </div>
+                        );
+                      } catch {
+                        return (
+                          <div className="flex h-full items-center justify-center">
+                            <Package className="h-16 w-16 text-gray-400" />
+                          </div>
+                        );
+                      }
+                    })()}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {productData.data.name}
+                    </h3>
+                    <p className="mt-2 text-3xl font-bold text-rose-600">
+                      {formatCurrency(productData.data.price)}
+                    </p>
+                  </div>
+
+                  {productData.data.description && (
+                    <div>
+                      <h4 className="mb-2 font-semibold text-gray-900">
+                        Mô tả
+                      </h4>
+                      <p className="leading-relaxed text-gray-600">
+                        {productData.data.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <span className="text-gray-600">Danh mục:</span>
+                      <p className="font-medium text-gray-900">
+                        {productData.data.categories &&
+                        productData.data.categories.length > 0
+                          ? productData.data.categories[0].name
+                          : 'Chưa phân loại'}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <span className="text-gray-600">Trạng thái:</span>
+                      <p className="font-medium text-gray-900">
+                        {productData.data.isActive ? 'Đang bán' : 'Ngừng bán'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <span className="text-gray-600">Tồn kho:</span>
+                      <p className="font-medium text-gray-900">
+                        {productData.data.stock || 0} sản phẩm
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <span className="text-gray-600">Loại:</span>
+                      <p className="font-medium text-gray-900">
+                        {productData.data.productType === 'PRODUCT'
+                          ? 'Sản phẩm'
+                          : 'Khác'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Composition */}
+              {productData.data.compositions &&
+                productData.data.compositions.length > 0 && (
+                  <div>
+                    <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                      <Flower2 className="h-5 w-5 text-rose-600" />
+                      Thành phần cấu tạo
+                    </h4>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {productData.data.compositions.map(
+                        (composition, index) => {
+                          const getCompositionImage = () => {
+                            try {
+                              const images = JSON.parse(
+                                composition.childImage || '[]'
+                              );
+                              return images && images.length > 0
+                                ? images[0]
+                                : null;
+                            } catch {
+                              return null;
+                            }
+                          };
+
+                          const compositionImage = getCompositionImage();
+                          const isFlower = composition.childType === 'FLOWER';
+
+                          return (
+                            <div
+                              key={index}
+                              className="rounded-xl border border-rose-200 bg-rose-50/50 p-4 transition-all hover:bg-rose-50 hover:shadow-sm"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
+                                  {compositionImage ? (
+                                    <img
+                                      src={compositionImage}
+                                      alt={composition.childName}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <Flower2
+                                      className={`h-6 w-6 ${isFlower ? 'text-rose-600' : 'text-gray-400'}`}
+                                    />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <h5 className="font-semibold text-gray-900">
+                                    {composition.childName}
+                                  </h5>
+                                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <span>SL:</span>
+                                    <Badge
+                                      variant="secondary"
+                                      className="bg-rose-100 text-rose-700"
+                                    >
+                                      {composition.quantity}
+                                    </Badge>
+                                    <span>•</span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatCurrency(composition.childPrice)}
+                                    </span>
+                                  </div>
+                                  <div className="mt-1">
+                                    <Badge
+                                      variant="outline"
+                                      className={`text-xs ${isFlower ? 'border-rose-300 text-rose-700' : 'border-gray-300 text-gray-600'}`}
+                                    >
+                                      {composition.childType === 'FLOWER'
+                                        ? '🌸 Hoa'
+                                        : '📦 Phụ kiện'}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Additional Images */}
+              {(() => {
+                try {
+                  const images = JSON.parse(productData.data.images || '[]');
+                  return (
+                    images &&
+                    images.length > 1 && (
+                      <div>
+                        <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                          Hình ảnh khác
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                          {images.slice(1).map((image, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setZoomedImage(image)}
+                              className="group aspect-square overflow-hidden rounded-lg bg-gray-100 transition-all hover:shadow-md"
+                            >
+                              <img
+                                src={image}
+                                alt={`${productData.data.name} - ${index + 2}`}
+                                className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  );
+                } catch {
+                  return null;
+                }
+              })()}
+            </div>
+          ) : (
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-center">
+                <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+                <p className="mt-4 text-gray-600">
+                  Không thể tải thông tin sản phẩm
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Image Zoom Modal */}
       {zoomedImage && (

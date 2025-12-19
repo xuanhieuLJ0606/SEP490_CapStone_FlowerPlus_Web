@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import {
-  Heart,
   Star,
   ChevronRight,
   Gift,
@@ -14,6 +13,7 @@ import {
   Leaf,
   Package
 } from 'lucide-react';
+import FavoriteButton from '@/components/favorites/FavoriteButton';
 import { useGetListProductToView } from '@/queries/product.query';
 
 import { Badge } from '@/components/ui/badge';
@@ -165,7 +165,6 @@ const transformApiProduct = (
 };
 
 export default function HomePage() {
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const { scrollYProgress } = useScroll();
@@ -227,16 +226,6 @@ export default function HomePage() {
     setCurrentSlide(index);
   };
 
-  const toggleFavorite = (id: number) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(id)) {
-      newFavorites.delete(id);
-    } else {
-      newFavorites.add(id);
-    }
-    setFavorites(newFavorites);
-  };
-
   const handleAddToCart = async (
     e: React.MouseEvent,
     productId: number,
@@ -280,7 +269,6 @@ export default function HomePage() {
   };
 
   const ProductCard = ({ product }: { product: Product; index: number }) => {
-    const isFavorite = favorites.has(product.id);
     const discountPercent = product.originalPrice
       ? Math.round((1 - product.price / product.originalPrice) * 100)
       : 0;
@@ -324,19 +312,13 @@ export default function HomePage() {
             </div>
 
             {/* Favorite Button */}
-            <motion.button
-              onClick={(e) => {
-                e.preventDefault();
-                toggleFavorite(product.id);
-              }}
-              className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-white"
-            >
-              <motion.div transition={{ duration: 0.3 }}>
-                <Heart
-                  className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-                />
-              </motion.div>
-            </motion.button>
+            <div className="absolute right-3 top-3">
+              <FavoriteButton
+                productId={product.id}
+                size="md"
+                variant="default"
+              />
+            </div>
 
             {/* Quick Actions - appears on hover */}
             <motion.div

@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
   ShoppingCart,
   Eye,
-  Heart,
   Sparkles,
   Star,
   Search,
   SlidersHorizontal,
   X
 } from 'lucide-react';
+import FavoriteButton from '@/components/favorites/FavoriteButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGetListProductByPaging } from '@/queries/product.query';
 import { PRODUCT_TYPE } from '@/constants/data';
@@ -238,7 +238,6 @@ const FilterSidebar = ({
 export default function ListProduct() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-  const [likedProducts, setLikedProducts] = useState<Set<number>>(new Set());
 
   const { categoryId } = useParams();
   const [searchParams] = useSearchParams();
@@ -336,18 +335,6 @@ export default function ListProduct() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  const toggleLike = useCallback((productId: number) => {
-    setLikedProducts((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(productId)) {
-        newSet.delete(productId);
-      } else {
-        newSet.add(productId);
-      }
-      return newSet;
-    });
-  }, []);
 
   const handleResetFilters = () => {
     setSearchKeyword('');
@@ -705,26 +692,14 @@ export default function ListProduct() {
                                 )}
                               </div>
 
-                              {/* Like button */}
-                              <motion.button
-                                onClick={() => toggleLike(product.id)}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                animate={{
-                                  backgroundColor: likedProducts.has(product.id)
-                                    ? 'rgb(236, 72, 153)'
-                                    : 'rgba(255, 255, 255, 0.8)'
-                                }}
-                                className="absolute right-3 top-3 rounded-full p-2 backdrop-blur-md"
-                              >
-                                <Heart
-                                  className={`h-4 w-4 ${
-                                    likedProducts.has(product.id)
-                                      ? 'fill-white text-white'
-                                      : 'text-pink-500'
-                                  }`}
+                              {/* Favorite button */}
+                              <div className="absolute right-3 top-3">
+                                <FavoriteButton
+                                  productId={product.id}
+                                  size="md"
+                                  variant="default"
                                 />
-                              </motion.button>
+                              </div>
                             </div>
 
                             {/* Product Info */}

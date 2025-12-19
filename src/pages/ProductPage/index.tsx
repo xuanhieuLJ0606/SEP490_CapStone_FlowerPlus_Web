@@ -11,7 +11,6 @@ import {
   CarouselItem
 } from '@/components/ui/carousel';
 import {
-  Heart,
   Share2,
   Truck,
   ShieldCheck,
@@ -21,6 +20,7 @@ import {
   Loader2,
   ShoppingCart
 } from 'lucide-react';
+import { LargeFavoriteButton } from '@/components/favorites/FavoriteButton';
 import { useGetProductById } from '@/queries/product.query';
 import { toast } from '@/components/ui/use-toast';
 import { useAddItemToCart } from '@/queries/cart.query';
@@ -201,13 +201,12 @@ export default function ProductDetailPage() {
                 )}
               </div>
               <div className="pointer-events-none absolute right-2 top-2 flex gap-1">
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="pointer-events-auto h-8 w-8 rounded-full"
-                >
-                  <Heart className="h-3.5 w-3.5" />
-                </Button>
+                <div className="pointer-events-auto">
+                  <LargeFavoriteButton
+                    productId={product.id}
+                    showCount={true}
+                  />
+                </div>
                 <Button
                   size="icon"
                   variant="secondary"

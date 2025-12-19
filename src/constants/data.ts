@@ -91,6 +91,14 @@ export const shopOwnerNavItems: any = [
         isActive: false,
         shortcut: ['d', 'd'],
         items: []
+      },
+      {
+        title: 'Voucher cá nhân',
+        url: '/admin/personal-vouchers',
+        icon: 'gift',
+        isActive: false,
+        shortcut: ['p', 'v'],
+        items: []
       }
     ]
   }

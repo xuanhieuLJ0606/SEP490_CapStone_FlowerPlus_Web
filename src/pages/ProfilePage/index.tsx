@@ -5,6 +5,7 @@ import { PersonalInfo } from './PersonalInfo';
 import { useGetMyInfo } from '@/queries/auth.query';
 import Address from './Address';
 import RefundRequests from './RefundRequests';
+import PersonalVouchers from './PersonalVouchers';
 
 const PlaceholderContent = ({ title }) => (
   <div className="space-y-6">
@@ -40,7 +41,7 @@ const ProfilePage = () => {
       case 'refunds':
         return <RefundRequests />;
       case 'vouchers':
-        return <PlaceholderContent title="Mã giảm giá" />;
+        return <PersonalVouchers />;
       case 'favorites':
         return <PlaceholderContent title="Yêu thích" />;
       case 'reviews':

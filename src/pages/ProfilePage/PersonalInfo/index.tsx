@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User,
   Edit2,
@@ -11,6 +11,8 @@ import {
   Calendar,
   UserCircle
 } from 'lucide-react';
+import { useUpdateProfile } from '@/queries/auth.query';
+import { toast } from 'sonner';
 export const PersonalInfo = ({
   userData,
   isPending
@@ -20,13 +22,29 @@ export const PersonalInfo = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: userData?.firstName,
-    lastName: userData?.lastName,
-    email: userData?.email,
+    firstName: userData?.firstName || '',
+    lastName: userData?.lastName || '',
+    email: userData?.email || '',
     phone: userData?.phone || '',
-    birthDate: userData?.birthDate,
-    gender: userData?.gender
+    birthDate: userData?.birthDate || '',
+    gender: userData?.gender || 'MALE'
   });
+
+  const updateProfileMutation = useUpdateProfile();
+
+  // Cập nhật formData khi userData thay đổi
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+        birthDate: formatDateForInput(userData.birthDate) || '',
+        gender: userData.gender || 'MALE'
+      });
+    }
+  }, [userData]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -38,6 +56,12 @@ export const PersonalInfo = ({
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
+  };
+
+  const formatDateTimeForBackend = (dateString) => {
+    if (!dateString) return null;
+    // Input date format: YYYY-MM-DD -> LocalDateTime format: YYYY-MM-DDTHH:mm:ss
+    return dateString + 'T00:00:00';
   };
 
   const getRoleLabel = (role) => {
@@ -59,9 +83,34 @@ export const PersonalInfo = ({
     return genders[gender] || gender;
   };
 
-  const handleSave = () => {
-    // Xử lý lưu dữ liệu ở đây
-    console.log('Saving data:', formData);
+  const handleSave = async () => {
+    try {
+      const dataToSend = {
+        ...formData,
+        birthDate: formatDateTimeForBackend(formData.birthDate)
+      };
+      await updateProfileMutation.mutateAsync(dataToSend);
+      toast.success('Cập nhật thông tin thành công!');
+      setIsEditing(false);
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin'
+      );
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form về dữ liệu gốc
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+        birthDate: formatDateForInput(userData.birthDate) || '',
+        gender: userData.gender || 'MALE'
+      });
+    }
     setIsEditing(false);
   };
 
@@ -254,13 +303,17 @@ export const PersonalInfo = ({
             <>
               <button
                 onClick={handleSave}
-                className="rounded-lg bg-rose-600 px-6 py-2.5 font-semibold text-white transition-all hover:bg-rose-700"
+                disabled={updateProfileMutation.isPending}
+                className="rounded-lg bg-rose-600 px-6 py-2.5 font-semibold text-white transition-all hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Lưu thay đổi
+                {updateProfileMutation.isPending
+                  ? 'Đang lưu...'
+                  : 'Lưu thay đổi'}
               </button>
               <button
-                onClick={() => setIsEditing(false)}
-                className="rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50"
+                onClick={handleCancel}
+                disabled={updateProfileMutation.isPending}
+                className="rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Hủy
               </button>
