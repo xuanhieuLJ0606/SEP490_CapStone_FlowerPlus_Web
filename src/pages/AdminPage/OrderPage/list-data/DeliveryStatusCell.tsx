@@ -1,5 +1,16 @@
 // DeliveryStatusCell.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
+import UploadImage from '@/components/shared/upload-image';
+import { useUpdateDeliveryStatusImage } from '@/queries/order.query';
 
 const deliveryStepMap: Record<string, string> = {
   PENDING_CONFIRMATION: 'Chờ xác nhận',
@@ -122,14 +133,23 @@ interface DeliveryStatus {
 
 interface DeliveryStatusCellProps {
   deliveryStatuses: DeliveryStatus[];
+  orderId: number;
 }
 
 export const DeliveryStatusCell: React.FC<DeliveryStatusCellProps> = ({
-  deliveryStatuses
+  deliveryStatuses,
+  orderId
 }) => {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomImage, setZoomImage] = useState<any>(null);
+  const [showUpdateImageDialog, setShowUpdateImageDialog] = useState(false);
+  const [selectedStatusForUpdate, setSelectedStatusForUpdate] =
+    useState<DeliveryStatus | null>(null);
+  const [newImageUrl, setNewImageUrl] = useState<string>('');
+
+  const { mutateAsync: updateDeliveryStatusImage, isPending: isUpdatingImage } =
+    useUpdateDeliveryStatusImage();
 
   const sortedStatuses = useMemo(() => {
     return [...deliveryStatuses].sort(
@@ -147,6 +167,60 @@ export const DeliveryStatusCell: React.FC<DeliveryStatusCellProps> = ({
   }
 
   const activeStatus = sortedStatuses[activeIndex];
+
+  const handleImageChange = useCallback((urls: string | string[]) => {
+    const imageUrl = typeof urls === 'string' ? urls : urls[0] || '';
+    setNewImageUrl(imageUrl);
+  }, []);
+
+  const handleUpdateImage = async () => {
+    if (!selectedStatusForUpdate || !newImageUrl) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng chọn hình ảnh',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const [err] = await updateDeliveryStatusImage({
+        orderId,
+        deliveryStatusId: Number(selectedStatusForUpdate.id),
+        imageUrl: newImageUrl
+      });
+
+      if (err) {
+        toast({
+          title: 'Lỗi',
+          description: err.message || 'Có lỗi xảy ra khi cập nhật hình ảnh',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Thành công',
+        description: 'Đã cập nhật hình ảnh thành công'
+      });
+
+      setShowUpdateImageDialog(false);
+      setSelectedStatusForUpdate(null);
+      setNewImageUrl('');
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra khi cập nhật hình ảnh',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const openUpdateImageDialog = (status: DeliveryStatus) => {
+    setSelectedStatusForUpdate(status);
+    setNewImageUrl(status.imageUrl || '');
+    setShowUpdateImageDialog(true);
+  };
 
   return (
     <>
@@ -258,18 +332,34 @@ export const DeliveryStatusCell: React.FC<DeliveryStatusCellProps> = ({
                     )}
 
                     {/* PHẦN HÌNH ẢNH + ZOOM */}
-                    {activeStatus.imageUrl && (
-                      <div>
+                    <div>
+                      <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-500">Hình ảnh</div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openUpdateImageDialog(activeStatus)}
+                          className="text-xs"
+                        >
+                          {activeStatus.imageUrl ? 'Cập nhật ảnh' : 'Thêm ảnh'}
+                        </Button>
+                      </div>
 
+                      {activeStatus.imageUrl ? (
                         <img
                           onClick={() => setZoomImage(activeStatus.imageUrl)}
                           src={activeStatus.imageUrl}
                           alt="Hình ảnh"
-                          className="max-w-xs cursor-zoom-in rounded border object-cover"
+                          className="mt-2 max-w-xs cursor-zoom-in rounded border object-cover"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="mt-2 flex h-32 w-48 items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50">
+                          <span className="text-sm text-gray-400">
+                            Chưa có hình ảnh
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500">
@@ -298,6 +388,93 @@ export const DeliveryStatusCell: React.FC<DeliveryStatusCellProps> = ({
           </button>
         </div>
       )}
+
+      {/* DIALOG CẬP NHẬT HÌNH ẢNH */}
+      <Dialog
+        open={showUpdateImageDialog}
+        onOpenChange={setShowUpdateImageDialog}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-blue-700">
+              {selectedStatusForUpdate?.imageUrl
+                ? 'Cập nhật hình ảnh'
+                : 'Thêm hình ảnh'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <div className="mb-2 text-sm font-medium text-gray-700">
+                Trạng thái:{' '}
+                {selectedStatusForUpdate &&
+                  deliveryStepMap[selectedStatusForUpdate.step]}
+              </div>
+              <div className="text-xs text-gray-500">
+                Thời gian:{' '}
+                {selectedStatusForUpdate &&
+                  new Date(selectedStatusForUpdate.eventAt).toLocaleString(
+                    'vi-VN'
+                  )}
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm font-medium text-gray-700">
+                Hình ảnh hiện tại:
+              </div>
+              {selectedStatusForUpdate?.imageUrl ? (
+                <img
+                  src={selectedStatusForUpdate.imageUrl}
+                  alt="Hình ảnh hiện tại"
+                  className="h-32 w-full rounded border object-cover"
+                />
+              ) : (
+                <div className="flex h-32 w-full items-center justify-center rounded border-2 border-dashed border-gray-300 bg-gray-50">
+                  <span className="text-sm text-gray-400">
+                    Chưa có hình ảnh
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm font-medium text-gray-700">
+                {selectedStatusForUpdate?.imageUrl
+                  ? 'Chọn hình ảnh mới:'
+                  : 'Chọn hình ảnh:'}
+              </div>
+              <UploadImage
+                multiple={false}
+                maxFiles={1}
+                onChange={handleImageChange}
+                defaultValue={selectedStatusForUpdate?.imageUrl}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowUpdateImageDialog(false);
+                setSelectedStatusForUpdate(null);
+                setNewImageUrl('');
+              }}
+              disabled={isUpdatingImage}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleUpdateImage}
+              disabled={isUpdatingImage || !newImageUrl}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {isUpdatingImage ? 'Đang cập nhật...' : 'Cập nhật'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

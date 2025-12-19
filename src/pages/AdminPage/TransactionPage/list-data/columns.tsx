@@ -52,6 +52,14 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => <span>{row.original.phoneNumber || 'N/A'}</span>
   },
   {
+    accessorKey: 'recipientName',
+    header: 'Tên người nhận',
+    enableSorting: true,
+    cell: ({ row }) => (
+      <span className="font-medium">{row.original.recipientName || 'N/A'}</span>
+    )
+  },
+  {
     accessorKey: 'amount',
     header: 'Số tiền',
     enableSorting: true,

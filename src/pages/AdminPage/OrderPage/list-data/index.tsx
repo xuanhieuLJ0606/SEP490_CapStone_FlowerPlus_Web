@@ -1,18 +1,22 @@
 import DataTable from '@/components/shared/data-table';
-import { columns } from './columns';
+import { createColumns } from './columns';
 type TTableProps = {
   data: any;
   page: number;
   totalUsers: number;
   pageCount: number;
   bulkActions?: any[];
+  refundData?: any;
 };
 
 export default function ListData({
   data,
   pageCount,
-  bulkActions
+  bulkActions,
+  refundData
 }: TTableProps) {
+  const columns = createColumns(refundData);
+
   return (
     <>
       {data && (

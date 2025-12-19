@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGetDashboard } from '@/queries/admin.query';
+import { useGetRefundRequests } from '@/queries/order.query';
 import { StatsCard } from './stats-card';
 import { RevenueChart } from './revenue-chart';
 import { OrdersChart } from './orders-chart';
@@ -12,7 +13,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Dashboard() {
   const { data: dashboardData } = useGetDashboard();
+  const { data: refundData } = useGetRefundRequests();
   const [activeTab, setActiveTab] = useState('store');
+
+  // Tính toán lại dữ liệu với refund thực tế
+  const correctedDashboardData = useMemo(() => {
+    if (!dashboardData || !refundData?.data) {
+      return dashboardData;
+    }
+
+    // Tính tổng tiền hoàn lại từ bảng refund_request
+    const completedRefunds = refundData.data.filter(
+      (refund: any) => refund.status === 'COMPLETED'
+    );
+    const totalRefunded = completedRefunds.reduce(
+      (sum: number, refund: any) => sum + (refund.refundAmount || 0),
+      0
+    );
+
+    // Tính doanh thu ròng
+    const netRevenue = (dashboardData.totalRevenue || 0) - totalRefunded;
+
+    // Đếm số đơn hàng đã hoàn tiền
+    const refundedOrders = completedRefunds.length;
+
+    return {
+      ...dashboardData,
+      totalRefunded,
+      netRevenue,
+      refundedOrders
+    };
+  }, [dashboardData, refundData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50">
@@ -40,19 +71,19 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatsCard
                 title="Tổng doanh thu (Thành công)"
-                value={`${(dashboardData?.totalRevenue || 0).toLocaleString('vi-VN')} ₫`}
+                value={`${(correctedDashboardData?.totalRevenue || 0).toLocaleString('vi-VN')} ₫`}
                 description="Từ đơn hàng đã giao"
                 icon="💰"
               />
               <StatsCard
                 title="Tiền hoàn lại"
-                value={`${(dashboardData?.totalRefunded || 0).toLocaleString('vi-VN')} ₫`}
+                value={`${(correctedDashboardData?.totalRefunded || 0).toLocaleString('vi-VN')} ₫`}
                 description="Đơn hàng đã hoàn tiền"
                 icon="💸"
               />
               <StatsCard
                 title="Doanh thu ròng"
-                value={`${(dashboardData?.netRevenue || 0).toLocaleString('vi-VN')} ₫`}
+                value={`${(correctedDashboardData?.netRevenue || 0).toLocaleString('vi-VN')} ₫`}
                 description="Doanh thu - Hoàn tiền"
                 icon="📊"
               />
@@ -61,19 +92,19 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatsCard
                 title="Tổng đơn hàng"
-                value={dashboardData?.totalOrders || 0}
+                value={correctedDashboardData?.totalOrders || 0}
                 description="Tất cả đơn hàng"
                 icon="📦"
               />
               <StatsCard
                 title="Tổng sản phẩm"
-                value={dashboardData?.totalProducts || 0}
+                value={correctedDashboardData?.totalProducts || 0}
                 description="Sản phẩm trong kho"
                 icon="🌸"
               />
               <StatsCard
                 title="Tổng khách hàng"
-                value={dashboardData?.totalUsers || 0}
+                value={correctedDashboardData?.totalUsers || 0}
                 description="Người dùng đã đăng ký"
                 icon="👥"
               />
@@ -88,10 +119,10 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {dashboardData?.topCustomers &&
-                  dashboardData.topCustomers.length > 0 ? (
+                  {correctedDashboardData?.topCustomers &&
+                  correctedDashboardData.topCustomers.length > 0 ? (
                     <div className="space-y-3">
-                      {dashboardData.topCustomers.map(
+                      {correctedDashboardData.topCustomers.map(
                         (customer: any, index: number) => {
                           const totalSpent = parseFloat(
                             customer.totalspent || customer.totalSpent || 0
@@ -138,8 +169,8 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {dashboardData?.monthlyRevenue && (
-                <RevenueChart data={dashboardData.monthlyRevenue} />
+              {correctedDashboardData?.monthlyRevenue && (
+                <RevenueChart data={correctedDashboardData.monthlyRevenue} />
               )}
             </div>
           </TabsContent>
@@ -154,7 +185,7 @@ export default function Dashboard() {
                         Đơn thành công
                       </p>
                       <p className="mt-2 text-3xl font-bold text-green-600">
-                        {dashboardData?.successfulOrders || 0}
+                        {correctedDashboardData?.successfulOrders || 0}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
                         Đã giao hàng
@@ -173,7 +204,7 @@ export default function Dashboard() {
                         Đang giao
                       </p>
                       <p className="mt-2 text-3xl font-bold text-blue-600">
-                        {dashboardData?.deliveringOrders || 0}
+                        {correctedDashboardData?.deliveringOrders || 0}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
                         Đang vận chuyển
@@ -192,7 +223,7 @@ export default function Dashboard() {
                         Đang chờ
                       </p>
                       <p className="mt-2 text-3xl font-bold text-yellow-600">
-                        {dashboardData?.pendingOrders || 0}
+                        {correctedDashboardData?.pendingOrders || 0}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Chờ xử lý</p>
                     </div>
@@ -209,7 +240,7 @@ export default function Dashboard() {
                         Đã hủy
                       </p>
                       <p className="mt-2 text-3xl font-bold text-red-600">
-                        {dashboardData?.failedOrders || 0}
+                        {correctedDashboardData?.failedOrders || 0}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Đơn bị hủy</p>
                     </div>
@@ -226,7 +257,7 @@ export default function Dashboard() {
                         Đã hoàn tiền
                       </p>
                       <p className="mt-2 text-3xl font-bold text-purple-600">
-                        {dashboardData?.refundedOrders || 0}
+                        {correctedDashboardData?.refundedOrders || 0}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Đã hoàn lại</p>
                     </div>
@@ -236,22 +267,24 @@ export default function Dashboard() {
               </Card>
             </div>
 
-            {dashboardData && (
+            {correctedDashboardData && (
               <StatusBarChart
                 data={{
-                  successfulOrders: dashboardData.successfulOrders || 0,
-                  deliveringOrders: dashboardData.deliveringOrders || 0,
-                  pendingOrders: dashboardData.pendingOrders || 0,
-                  failedOrders: dashboardData.failedOrders || 0,
-                  refundedOrders: dashboardData.refundedOrders || 0
+                  successfulOrders:
+                    correctedDashboardData.successfulOrders || 0,
+                  deliveringOrders:
+                    correctedDashboardData.deliveringOrders || 0,
+                  pendingOrders: correctedDashboardData.pendingOrders || 0,
+                  failedOrders: correctedDashboardData.failedOrders || 0,
+                  refundedOrders: correctedDashboardData.refundedOrders || 0
                 }}
               />
             )}
 
             <div className="grid grid-cols-1 gap-8">
-              {dashboardData?.monthlyOrdersByStatus && (
+              {correctedDashboardData?.monthlyOrdersByStatus && (
                 <OrdersChart
-                  data={dashboardData.monthlyOrdersByStatus}
+                  data={correctedDashboardData.monthlyOrdersByStatus}
                   showByStatus={true}
                 />
               )}
