@@ -91,3 +91,16 @@ export const useCreateUpdateAddress = () => {
     }
   });
 };
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['update-profile'],
+    mutationFn: async (model: any) => {
+      return BaseRequestV2.Post(`/auth/update-profile`, model);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get-my-info'] });
+    }
+  });
+};

@@ -6,14 +6,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 
-export const useGetAllUser = (keyword) => {
+export const useGetAllUser = (keyword: string) => {
   return useQuery({
     queryKey: ['get-all-user', keyword],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append('searchTerm', keyword);
       return await BaseRequest.Get(
-        `/api/user-management/users?${params.toString()}`
+        `/user-management/users?${params.toString()}`
       );
     }
   });
@@ -25,7 +25,7 @@ export const useUpdateUser = () => {
     mutationKey: ['update-user'],
     mutationFn: async (model: any) => {
       return await BaseRequestV2.Put(
-        `/api/user-management/users/${model.id}`,
+        `/user-management/users/${model.id}`,
         model
       );
     },
@@ -44,7 +44,7 @@ export const useUpdateLockUser = () => {
     mutationFn: async (model: any) => {
       console.log(model);
       return await axios.put(
-        `/api/user-management/users/${model.id}/block`,
+        `/user-management/users/${model.id}/block`,
         !model.status,
         {
           headers: {
@@ -91,11 +91,51 @@ export const useGetMyInfoOnce = () => {
   });
 };
 
-export const useGetUsers = () => {
+export const useGetUsers = (params?: {
+  search?: string;
+  page?: number;
+  size?: number;
+}) => {
   return useQuery({
-    queryKey: ['get-users'],
+    queryKey: ['get-users', params],
     queryFn: async () => {
-      return await BaseRequest.Get(`/auth/get-list-users`);
+      const searchParams = new URLSearchParams();
+      if (params?.search) searchParams.append('searchTerm', params.search);
+      // Convert page from 0-based to 1-based for backend
+      if (params?.page !== undefined)
+        searchParams.append('page', (params.page + 1).toString());
+      if (params?.size !== undefined)
+        searchParams.append('size', params.size.toString());
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `/user-management/users?${queryString}`
+        : '/user-management/users';
+      return await BaseRequest.Get(url);
+    }
+  });
+};
+
+export const useGetUsersForVoucher = (params?: {
+  search?: string;
+  page?: number;
+  size?: number;
+}) => {
+  return useQuery({
+    queryKey: ['get-users-for-voucher', params],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.page !== undefined)
+        searchParams.append('page', (params.page + 1).toString());
+      if (params?.size !== undefined)
+        searchParams.append('size', params.size.toString());
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `/auth/get-list-users?${queryString}`
+        : '/auth/get-list-users';
+      return await BaseRequest.Get(url);
     }
   });
 };

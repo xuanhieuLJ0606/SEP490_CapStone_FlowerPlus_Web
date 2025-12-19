@@ -36,13 +36,18 @@ export const useGetListProductByPaging = (
   });
 };
 
-export const useGetProductById = (id: number) => {
+export const useGetProductById = (
+  id: number | null,
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: ['get-product-by-id', id],
     queryFn: async () => {
+      if (!id) throw new Error('Product ID is required');
       const res = await BaseRequest.Get(`/products/get-product-by-id?id=${id}`);
-      return res.data;
-    }
+      return res;
+    },
+    enabled: options?.enabled !== false && !!id
   });
 };
 

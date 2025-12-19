@@ -111,3 +111,25 @@ export const useProcessRefund = () => {
     }
   });
 };
+
+export const useUpdateDeliveryStatusImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['update-delivery-status-image'],
+    mutationFn: async (data: {
+      orderId: number;
+      deliveryStatusId: number;
+      imageUrl: string;
+    }) => {
+      return BaseRequest.Put(
+        `/orders/${data.orderId}/delivery-status/${data.deliveryStatusId}/image`,
+        {
+          imageUrl: data.imageUrl
+        }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    }
+  });
+};
