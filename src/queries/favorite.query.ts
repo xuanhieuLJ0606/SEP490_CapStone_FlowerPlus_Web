@@ -6,6 +6,7 @@ import type {
   FavoriteToggleRequest,
   FavoriteStatusMap
 } from '@/types/favorite.types';
+import __helpers from '@/helpers';
 
 // Helper function to safely extract data from API response
 const extractData = (response: any) => {
@@ -52,8 +53,10 @@ export const useFavoriteStatus = (
       const res = await BaseRequest.Get(`/favorites/check/${productId}`);
       return extractData(res);
     },
-    enabled: options?.enabled !== false && !!productId,
-    staleTime: 2 * 60 * 1000 // 2 minutes
+    enabled:
+      options?.enabled !== false && !!productId && !!__helpers.cookie_get('AT'),
+    staleTime: 30 * 1000, // 30 seconds - shorter to allow faster updates
+    refetchOnMount: 'always'
   });
 };
 
@@ -106,8 +109,14 @@ export const useFavoriteToggle = () => {
       return extractData(res);
     },
     onSuccess: (data, variables) => {
-      // Update favorite status cache
+      // Update favorite status cache immediately
       queryClient.setQueryData(favoriteKeys.status(variables.productId), data);
+
+      // Invalidate and refetch to ensure UI updates
+      queryClient.invalidateQueries({
+        queryKey: favoriteKeys.status(variables.productId),
+        refetchType: 'active'
+      });
 
       // Invalidate favorites list to refresh
       queryClient.invalidateQueries({
@@ -168,7 +177,7 @@ export const useRemoveFavorite = () => {
       // Update favorite status cache
       queryClient.setQueryData(favoriteKeys.status(productId), {
         productId,
-        isFavorited: false
+        favorited: false
       });
 
       // Invalidate favorites list to refresh
@@ -230,9 +239,22 @@ export const useOptimisticFavoriteToggle = () => {
       const currentStatus = previousStatus?.favorited || false;
 
       // Optimistically update the UI
-      queryClient.setQueryData(favoriteKeys.status(request.productId), {
+      const newStatus = !currentStatus;
+      const optimisticData: FavoriteStatusResponse = {
         productId: request.productId,
-        isFavorited: !currentStatus
+        favorited: newStatus
+      };
+
+      // Set query data optimistically - this should trigger re-render
+      queryClient.setQueryData(
+        favoriteKeys.status(request.productId),
+        optimisticData
+      );
+
+      // Force refetch to ensure UI updates immediately
+      queryClient.refetchQueries({
+        queryKey: favoriteKeys.status(request.productId),
+        type: 'active'
       });
 
       // Update status maps optimistically
@@ -245,15 +267,16 @@ export const useOptimisticFavoriteToggle = () => {
           if (!oldData) return oldData;
           return {
             ...oldData,
-            [request.productId]: !currentStatus
+            [request.productId]: newStatus
           };
         }
       );
 
       // Perform the actual mutation
       toggleMutation.mutate(request, {
-        onSuccess: () => {
-          // Record performance metrics
+        onSuccess: (data) => {
+          // The parent mutation already handles cache updates
+          // Just record performance metrics
           const latency = Date.now() - startTime;
           console.debug(`Favorite toggle completed in ${latency}ms`);
         },
