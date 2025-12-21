@@ -3,7 +3,7 @@ import {
   useGetCategories,
   useUpdateCategory
 } from '@/queries/categories.query';
-import { PencilIcon, Trash2Icon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { PencilIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { SyncItemButton } from '@/components/shared/sync-item-button';
 import React, { useMemo, useState } from 'react';
 import {
@@ -243,16 +243,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Delete button */}
-      <Button
-        className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md transition-all hover:from-red-600 hover:to-rose-600 hover:shadow-lg"
-        size="icon"
-        type="button"
-        // onClick={handleDelete} // Có thể triển khai xoá sau
-      >
-        <Trash2Icon className="size-4 transition-transform group-hover:scale-110" />
-      </Button>
     </div>
   );
 };
