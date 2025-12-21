@@ -93,7 +93,7 @@ export const shopOwnerNavItems: any = [
         items: []
       },
       {
-        title: 'Voucher cá nhân',
+        title: 'Mã giảm giá cá nhân',
         url: '/admin/personal-vouchers',
         icon: 'gift',
         isActive: false,

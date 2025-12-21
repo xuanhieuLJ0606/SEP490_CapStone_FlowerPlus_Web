@@ -19,7 +19,7 @@ export class FavoriteCacheManager {
     // Update individual status cache
     this.queryClient.setQueryData(favoriteKeys.status(productId), {
       productId,
-      isFavorited: newStatus
+      favorited: newStatus
     });
 
     // Update status maps that include this product
@@ -34,14 +34,14 @@ export class FavoriteCacheManager {
       }
     );
 
-    return { productId, isFavorited: newStatus };
+    return { productId, favorited: newStatus };
   }
 
   // Revert optimistic update on error
   revertOptimisticUpdate(productId: number, originalStatus: boolean) {
     this.queryClient.setQueryData(favoriteKeys.status(productId), {
       productId,
-      isFavorited: originalStatus
+      favorited: originalStatus
     });
 
     this.queryClient.setQueriesData(
@@ -58,10 +58,10 @@ export class FavoriteCacheManager {
 
   // Batch update favorite statuses
   batchUpdateStatuses(statusMap: FavoriteStatusMap) {
-    Object.entries(statusMap).forEach(([productId, isFavorited]) => {
+    Object.entries(statusMap).forEach(([productId, favorited]) => {
       this.queryClient.setQueryData(favoriteKeys.status(parseInt(productId)), {
         productId: parseInt(productId),
-        isFavorited
+        favorited
       });
     });
   }
@@ -138,14 +138,14 @@ export class FavoriteCacheManager {
 
   // Warm up cache with initial data
   warmUpCache(initialData: {
-    favoriteStatuses?: Array<{ productId: number; isFavorited: boolean }>;
+    favoriteStatuses?: Array<{ productId: number; favorited: boolean }>;
     favoriteCounts?: Array<{ productId: number; count: number }>;
   }) {
     // Set favorite statuses
-    initialData.favoriteStatuses?.forEach(({ productId, isFavorited }) => {
+    initialData.favoriteStatuses?.forEach(({ productId, favorited }) => {
       this.queryClient.setQueryData(favoriteKeys.status(productId), {
         productId,
-        isFavorited
+        favorited
       });
     });
 
