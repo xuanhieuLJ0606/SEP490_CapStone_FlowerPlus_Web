@@ -23,6 +23,9 @@ const ProductsPage = lazy(() => import('@/pages/AdminPage/ProductsPage/index'));
 const ProductCustom = lazy(() => import('@/pages/ProductCustom/index'));
 const ListProduct = lazy(() => import('@/pages/ListProduct/index'));
 const DashboardPage = lazy(() => import('@/pages/AdminPage/Dashboard/index'));
+const StaffDashboardPage = lazy(
+  () => import('@/pages/StaffPage/Dashboard/index')
+);
 const OrderPage = lazy(() => import('@/pages/AdminPage/OrderPage/index'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage/index'));
 const TransactionPage = lazy(
@@ -41,6 +44,8 @@ const RefundManagementPage = lazy(
 const FavoritesPage = lazy(
   () => import('@/components/favorites/FavoritesPage')
 );
+// const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccess/index'));
+// const PaymentFailurePage = lazy(() => import('@/pages/PaymentFailure/index'));
 
 // ----------------------------------------------------------------------
 
@@ -103,6 +108,10 @@ export default function AppRouter() {
           element: <DashboardPage />
         },
         {
+          path: '/staff/dashboard',
+          element: <StaffDashboardPage />
+        },
+        {
           path: '/admin/categories',
           element: <CategoriesPage />
         },
@@ -161,6 +170,14 @@ export default function AppRouter() {
       path: '/auth/forgot-password/:resetToken',
       element: <CompleteForgotPasswordPage />
     },
+    // {
+    //   path: '/payment/success',
+    //   element: <PaymentSuccessPage />
+    // },
+    // {
+    //   path: '/payment/failure',
+    //   element: <PaymentFailurePage />
+    // },
     {
       path: '/auth/verify-email/:verificationToken',
       element: <VerifyEmailPage />

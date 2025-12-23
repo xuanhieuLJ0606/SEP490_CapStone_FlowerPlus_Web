@@ -264,7 +264,7 @@ export default function AddressSelection({
 
       {/* Existing Address List */}
       {userAddresses.length > 0 && !showAddForm && (
-        <div className="space-y-3">
+        <div className="max-h-[300px] space-y-3 overflow-y-auto">
           {userAddresses.map((address) => (
             <motion.div
               key={address.id}

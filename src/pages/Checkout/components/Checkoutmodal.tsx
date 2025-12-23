@@ -485,7 +485,8 @@ export default function CheckoutModal({
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="space-y-2 overflow-hidden"
+                          className="max-h-[300px] space-y-2 overflow-y-auto"
+                          style={{ scrollbarWidth: 'thin' }}
                         >
                           {availableVouchers.length > 0 ? (
                             availableVouchers.map((voucher: Voucher) => {
