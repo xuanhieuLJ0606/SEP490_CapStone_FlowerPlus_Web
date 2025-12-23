@@ -40,7 +40,7 @@ function FavoriteProductCard({
   };
 
   const handleProductClick = () => {
-    navigate(`/products/${product.id}`);
+    navigate(`/product/${product.id}`);
   };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
