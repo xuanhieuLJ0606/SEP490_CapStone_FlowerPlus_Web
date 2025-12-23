@@ -10,12 +10,15 @@ import { Lock, Loader2, User } from 'lucide-react';
 import { useAdminLogin } from '@/queries/admin-auth.query';
 import __helpers from '@/helpers';
 import { toast } from '@/components/ui/use-toast';
+import { useGetMyInfo } from '@/queries/auth.query';
 
 export default function UserAuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { mutateAsync: adminLogin } = useAdminLogin();
+  const { refetch: refetchInfoUser } = useGetMyInfo();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -48,12 +51,22 @@ export default function UserAuthForm() {
     try {
       const [_, data] = await adminLogin({ username: email, password });
       __helpers.cookie_set('AT', data.accessToken);
+
+      const infoUser = await refetchInfoUser();
       toast({
         title: 'Đăng nhập thành công',
         description: 'Chào mừng bạn đến với trang quản trị',
         variant: 'default'
       });
-      window.location.href = '/admin/dashboard';
+
+      // window.location.href =
+      //   infoUser?.role === 'STAFF' ? '/admin/orders' : '/admin/dashboard';
+      console.log('infoUser', infoUser.data);
+      if (infoUser.data?.role === 'STAFF') {
+        window.location.href = '/admin/orders';
+      } else {
+        window.location.href = '/admin/dashboard';
+      }
     } catch (error: any) {
       toast({
         title: 'Đăng nhập không thành công',

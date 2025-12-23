@@ -26,7 +26,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem
 } from '@/components/ui/sidebar';
-import { shopOwnerNavItems } from '@/constants/data';
+import { shopOwnerNavItems, staffNavItems } from '@/constants/data';
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -55,7 +55,8 @@ export default function AppSidebar() {
     window.location.href = '/manager/login';
   };
   console.log('infoUser', infoUser);
-  const navItems = shopOwnerNavItems;
+  const navItems =
+    infoUser?.role === 'STAFF' ? staffNavItems : shopOwnerNavItems;
 
   const getInitials = (name) => {
     if (!name) return 'U';
