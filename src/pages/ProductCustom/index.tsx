@@ -269,6 +269,18 @@ export default function ProductCustomImproved() {
       setError('Vui lòng nhập số điện thoại');
       return;
     }
+    if (!orderForm.requestDeliveryTime.trim()) {
+      setError('Vui lòng chọn thời gian giao hàng mong muốn');
+      return;
+    }
+
+    // Validate thời gian giao hàng phải lớn hơn thời gian hiện tại
+    const selectedDateTime = new Date(orderForm.requestDeliveryTime);
+    const now = new Date();
+    if (selectedDateTime <= now) {
+      setError('Thời gian giao hàng phải lớn hơn thời gian hiện tại');
+      return;
+    }
 
     setLoading(true);
 
@@ -1355,9 +1367,10 @@ export default function ProductCustomImproved() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2 text-sm font-medium">
+                      <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                         <Clock className="h-4 w-4" />
                         Thời gian giao hàng mong muốn
+                        <span className="text-rose-500">*</span>
                       </Label>
                       <Input
                         type="datetime-local"
@@ -1368,7 +1381,9 @@ export default function ProductCustomImproved() {
                             requestDeliveryTime: e.target.value
                           }))
                         }
-                        className="border-gray-200 focus:border-rose-400"
+                        required
+                        min={new Date().toISOString().slice(0, 16)}
+                        className="border-rose-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                       />
                     </div>
                     <div>

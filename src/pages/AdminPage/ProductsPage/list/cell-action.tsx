@@ -244,6 +244,8 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         });
         return;
       }
+
+      // Backend sẽ tự động sync với AI sau khi update thành công
       toast({
         title: 'Thành công',
         description: 'Cập nhật product thành công',
@@ -458,6 +460,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                   setForm((s) => ({ ...s, description: e.target.value }))
                 }
                 placeholder="Mô tả sản phẩm"
+                rows={6}
               />
             </div>
 

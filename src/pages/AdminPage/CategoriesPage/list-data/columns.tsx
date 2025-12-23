@@ -2,7 +2,6 @@ import { ColumnDef } from '@tanstack/react-table';
 import { CellAction } from './cell-action';
 import __helpers from '@/helpers';
 import { useSearchParams } from 'react-router-dom';
-import { SyncStatusBadge } from '@/components/ui/sync-status-badge';
 
 // const StudentPaperStatus = {
 //   UPLOADED: 0,
@@ -51,14 +50,6 @@ export const columns: ColumnDef<any>[] = [
           {row.original.isPublic ? 'Hoạt động' : 'Khóa'}
         </span>
       );
-    }
-  },
-  {
-    accessorKey: 'syncStatus',
-    header: 'Sync Status',
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <SyncStatusBadge status={row.original.syncStatus} size="sm" />;
     }
   },
 

@@ -422,7 +422,7 @@ export function AddProductForm() {
                       setForm((s) => ({ ...s, description: e.target.value }))
                     }
                     placeholder="Nhập mô tả chi tiết về sản phẩm..."
-                    rows={4}
+                    rows={6}
                     className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>

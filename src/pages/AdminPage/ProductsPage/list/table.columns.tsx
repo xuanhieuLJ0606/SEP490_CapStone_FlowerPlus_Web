@@ -1,7 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { useSearchParams } from 'react-router-dom';
 import { CellAction } from './cell-action';
-import { SyncStatusBadge } from '@/components/ui/sync-status-badge';
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -57,14 +56,7 @@ export const columns: ColumnDef<any>[] = [
       <span>{row.original.isActive ? 'Hoạt động' : 'Ngưng'}</span>
     )
   },
-  {
-    accessorKey: 'syncStatus',
-    header: 'Sync Status',
-    enableSorting: true,
-    cell: ({ row }) => {
-      return <SyncStatusBadge status={row.original.syncStatus} size="sm" />;
-    }
-  },
+
   {
     accessorKey: 'images',
     header: 'Ảnh',

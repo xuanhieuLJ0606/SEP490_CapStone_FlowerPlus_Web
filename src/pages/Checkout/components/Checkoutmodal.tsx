@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useGetVouchers } from '@/queries/voucher.query';
 import AddressSelection from '@/components/checkout/address-selection';
+import { cn } from '@/lib/utils';
 
 interface Address {
   id: number;
@@ -84,6 +85,8 @@ export default function CheckoutModal({
     null
   );
   const [showVoucherList, setShowVoucherList] = useState(false);
+  const [addressError, setAddressError] = useState('');
+  const [deliveryTimeError, setDeliveryTimeError] = useState('');
 
   const { data: resVouchers } = useGetVouchers();
   const vouchers = resVouchers?.data || [];
@@ -179,22 +182,54 @@ export default function CheckoutModal({
   }, []);
 
   const handleNext = () => {
+    setAddressError('');
+    setDeliveryTimeError('');
+
     if (!selectedAddress) {
-      alert('Vui lòng chọn địa chỉ giao hàng');
+      setAddressError('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
+    if (!requestDeliveryTime.trim()) {
+      setDeliveryTimeError('Vui lòng chọn thời gian giao hàng mong muốn');
+      return;
+    }
+    // Validate thời gian giao hàng phải lớn hơn thời gian hiện tại
+    const selectedDateTime = new Date(requestDeliveryTime);
+    const now = new Date();
+    if (selectedDateTime <= now) {
+      setDeliveryTimeError(
+        'Thời gian giao hàng phải lớn hơn thời gian hiện tại'
+      );
       return;
     }
     setStep(2);
   };
 
   const handleConfirmCheckout = () => {
+    setAddressError('');
+    setDeliveryTimeError('');
+
     if (!selectedAddress) {
-      alert('Vui lòng chọn địa chỉ giao hàng');
+      setAddressError('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
+    if (!requestDeliveryTime.trim()) {
+      setDeliveryTimeError('Vui lòng chọn thời gian giao hàng mong muốn');
+      return;
+    }
+    // Validate thời gian giao hàng phải lớn hơn thời gian hiện tại
+    const selectedDateTime = new Date(requestDeliveryTime);
+    const now = new Date();
+    if (selectedDateTime <= now) {
+      setDeliveryTimeError(
+        'Thời gian giao hàng phải lớn hơn thời gian hiện tại'
+      );
       return;
     }
 
     const checkoutData = {
       note: note,
-      requestDeliveryTime: requestDeliveryTime || null,
+      requestDeliveryTime: requestDeliveryTime,
       voucherCode: selectedVoucherCode,
       returnUrl: window.location.origin + '/checkout/success',
       cancelUrl: window.location.origin + '/checkout/cancel',
@@ -214,6 +249,8 @@ export default function CheckoutModal({
     setRequestDeliveryTime('');
     setSelectedVoucherCode(null);
     setShowVoucherList(false);
+    setAddressError('');
+    setDeliveryTimeError('');
     onClose();
   };
 
@@ -231,7 +268,7 @@ export default function CheckoutModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[50] bg-black/60 backdrop-blur-sm"
             onClick={handleClose}
           />
 
@@ -288,7 +325,7 @@ export default function CheckoutModal({
             </div>
 
             {/* Content */}
-            <div className="max-h-[60vh] overflow-y-auto p-6">
+            <div className="max-h-[65vh] overflow-y-auto p-6">
               {/* Step 1: Shipping Address */}
               {step === 1 && (
                 <motion.div
@@ -297,10 +334,18 @@ export default function CheckoutModal({
                   className="space-y-6"
                 >
                   {/* Address Selection */}
-                  <AddressSelection
-                    onAddressSelect={setSelectedAddress}
-                    selectedAddressId={selectedAddress?.id}
-                  />
+                  <div className="space-y-2">
+                    <AddressSelection
+                      onAddressSelect={(address) => {
+                        setSelectedAddress(address);
+                        setAddressError('');
+                      }}
+                      selectedAddressId={selectedAddress?.id}
+                    />
+                    {addressError && (
+                      <p className="text-sm text-red-600">{addressError}</p>
+                    )}
+                  </div>
 
                   {/* Ghi chú đơn hàng */}
                   <div className="space-y-2">
@@ -318,21 +363,35 @@ export default function CheckoutModal({
 
                   {/* Thời gian giao hàng mong muốn */}
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-sm font-medium">
+                    <Label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                       <Clock className="h-4 w-4" />
                       Thời gian giao hàng mong muốn
+                      <span className="text-rose-500">*</span>
                     </Label>
                     <Input
                       type="datetime-local"
                       value={requestDeliveryTime}
-                      onChange={(e) => setRequestDeliveryTime(e.target.value)}
+                      required
+                      onChange={(e) => {
+                        setRequestDeliveryTime(e.target.value);
+                        setDeliveryTimeError('');
+                      }}
                       min={minDateTime}
-                      className="border-gray-200 focus:border-rose-400"
+                      className={cn(
+                        'border-rose-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20',
+                        deliveryTimeError && 'border-red-500'
+                      )}
                     />
-                    <p className="text-xs text-gray-500">
-                      Thời gian chỉ mang tính tham khảo, shop sẽ cố gắng giao
-                      gần nhất có thể.
-                    </p>
+                    {deliveryTimeError ? (
+                      <p className="text-sm text-red-600">
+                        {deliveryTimeError}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        Thời gian chỉ mang tính tham khảo, shop sẽ cố gắng giao
+                        gần nhất có thể.
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )}

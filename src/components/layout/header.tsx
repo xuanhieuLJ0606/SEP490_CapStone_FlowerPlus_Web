@@ -3,7 +3,6 @@ import {
   ChevronDown,
   LogIn,
   User,
-  HelpCircle,
   Flower,
   Search,
   Menu,
@@ -640,15 +639,7 @@ export default function Header() {
                             Yêu thích
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link
-                            to="/support"
-                            className="flex w-full items-center gap-2"
-                          >
-                            <HelpCircle className="h-4 w-4" />
-                            Hỗ trợ
-                          </Link>
-                        </DropdownMenuItem>
+
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
