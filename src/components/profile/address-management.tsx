@@ -7,7 +7,14 @@ import AddressSelector from '@/components/shared/address-selector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
@@ -142,8 +149,8 @@ export default function AddressManagement() {
           specificAddress: ''
         }
       });
-      setIsAddingNew(false);
       setEditingAddress(null);
+      setIsAddingNew(false);
 
       toast({
         title: 'Thành công',
@@ -173,6 +180,21 @@ export default function AddressManagement() {
     });
     setEditingAddress(address);
     setIsAddingNew(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsAddingNew(false);
+    setEditingAddress(null);
+    setFormData({
+      name: '',
+      phone: '',
+      addressForm: {
+        provinceCode: null,
+        districtCode: null,
+        wardCode: null,
+        specificAddress: ''
+      }
+    });
   };
 
   const handleSetDefault = async (address: UserAddress) => {
@@ -217,21 +239,22 @@ export default function AddressManagement() {
           Địa chỉ giao hàng
         </h3>
 
-        {!isAddingNew && (
-          <Button
-            onClick={() => setIsAddingNew(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Thêm địa chỉ
-          </Button>
-        )}
+        <Button
+          onClick={() => setIsAddingNew(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Thêm địa chỉ
+        </Button>
       </div>
 
       {/* Address List */}
       {userAddresses.length > 0 && (
         <div className="space-y-4">
-          <div className="grid gap-4">
+          <div
+            className="grid max-h-[500px] gap-4 overflow-y-auto"
+            style={{ scrollbarWidth: 'thin' }}
+          >
             {userAddresses.map((address) => (
               <motion.div
                 key={address.id}
@@ -299,99 +322,74 @@ export default function AddressManagement() {
         </div>
       )}
 
-      {/* Add/Edit Address Form */}
-      {isAddingNew && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {editingAddress ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Name and Phone */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">
-                    Tên người nhận <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                    placeholder="Nhập tên người nhận"
-                  />
-                </div>
+      {/* Add/Edit Address Modal */}
+      <Dialog open={isAddingNew} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingAddress ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới'}
+            </DialogTitle>
+          </DialogHeader>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        phone: e.target.value
-                      }))
-                    }
-                    placeholder="Nhập số điện thoại"
-                  />
-                </div>
+          <div className="space-y-4 py-4">
+            {/* Name and Phone */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  Tên người nhận <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="Nhập tên người nhận"
+                />
               </div>
 
-              {/* Address Selector */}
-              <AddressSelector
-                value={formData.addressForm}
-                onChange={(addressForm) =>
-                  setFormData((prev) => ({ ...prev, addressForm }))
-                }
-                required
-              />
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  className="flex items-center gap-2"
-                >
-                  <MapPin className="h-4 w-4" />
-                  {editingAddress ? 'Cập nhật' : 'Lưu địa chỉ'}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsAddingNew(false);
-                    setEditingAddress(null);
-                    setFormData({
-                      name: '',
-                      phone: '',
-                      addressForm: {
-                        provinceCode: null,
-                        districtCode: null,
-                        wardCode: null,
-                        specificAddress: ''
-                      }
-                    });
-                  }}
-                >
-                  Hủy
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="phone">
+                  Số điện thoại <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone: e.target.value
+                    }))
+                  }
+                  placeholder="Nhập số điện thoại"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+            </div>
+
+            {/* Address Selector */}
+            <AddressSelector
+              value={formData.addressForm}
+              onChange={(addressForm) =>
+                setFormData((prev) => ({ ...prev, addressForm }))
+              }
+              required
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseModal}>
+              Hủy
+            </Button>
+            <Button onClick={handleSave} className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {editingAddress ? 'Cập nhật' : 'Lưu địa chỉ'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Empty State */}
-      {userAddresses.length === 0 && !isAddingNew && (
+      {userAddresses.length === 0 && (
         <Card className="py-8 text-center">
           <CardContent>
             <MapPin className="mx-auto mb-4 h-12 w-12 text-gray-400" />

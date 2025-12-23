@@ -4,15 +4,28 @@ import {
   Edit2,
   Camera,
   Lock,
-  Trash2,
   LogOut,
   Mail,
   Phone,
   Calendar,
   UserCircle
 } from 'lucide-react';
-import { useUpdateProfile } from '@/queries/auth.query';
+import { useUpdateProfile, useChangePassword } from '@/queries/auth.query';
 import { toast } from 'sonner';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux/auth.slice';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import UploadImage from '@/components/shared/upload-image';
 export const PersonalInfo = ({
   userData,
   isPending
@@ -30,7 +43,17 @@ export const PersonalInfo = ({
     gender: userData?.gender || 'MALE'
   });
 
+  const dispatch = useDispatch();
   const updateProfileMutation = useUpdateProfile();
+  const changePasswordMutation = useChangePassword();
+
+  // States for modals
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Cập nhật formData khi userData thay đổi
   useEffect(() => {
@@ -112,6 +135,77 @@ export const PersonalInfo = ({
       });
     }
     setIsEditing(false);
+  };
+
+  const handleAvatarChange = async () => {
+    if (!avatarUrl) {
+      toast.error('Vui lòng chọn ảnh đại diện');
+      return;
+    }
+
+    try {
+      const dataToSend = {
+        ...formData,
+        avatar: avatarUrl,
+        birthDate: formatDateTimeForBackend(formData.birthDate)
+      };
+      await updateProfileMutation.mutateAsync(dataToSend);
+      toast.success('Cập nhật ảnh đại diện thành công!');
+      setIsAvatarModalOpen(false);
+      setAvatarUrl('');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          'Có lỗi xảy ra khi cập nhật ảnh đại diện'
+      );
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPassword.trim()) {
+      toast.error('Vui lòng nhập mật khẩu cũ');
+      return;
+    }
+    if (!newPassword.trim()) {
+      toast.error('Vui lòng nhập mật khẩu mới');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    try {
+      await changePasswordMutation.mutateAsync({
+        oldPassword,
+        newPassword,
+        confirmNewPassword: confirmPassword
+      });
+      toast.success('Đổi mật khẩu thành công!');
+      setIsPasswordModalOpen(false);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || 'Có lỗi xảy ra khi đổi mật khẩu'
+      );
+    }
+  };
+
+  const handleClosePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+    setOldPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
   };
 
   if (isPending) {
@@ -320,19 +414,24 @@ export const PersonalInfo = ({
             </>
           ) : (
             <>
-              <button className="flex items-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-rose-600 hover:bg-rose-50 hover:text-rose-600">
+              <button
+                onClick={() => setIsAvatarModalOpen(true)}
+                className="flex items-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-rose-600 hover:bg-rose-50 hover:text-rose-600"
+              >
                 <Camera className="h-4 w-4" />
                 Đổi ảnh đại diện
               </button>
-              <button className="flex items-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-rose-600 hover:bg-rose-50 hover:text-rose-600">
+              <button
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="flex items-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-2.5 font-semibold text-gray-700 transition-all hover:border-rose-600 hover:bg-rose-50 hover:text-rose-600"
+              >
                 <Lock className="h-4 w-4" />
                 Đổi mật khẩu
               </button>
-              <button className="flex items-center gap-2 rounded-lg border-2 border-red-300 bg-white px-6 py-2.5 font-semibold text-red-600 transition-all hover:border-red-600 hover:bg-red-50">
-                <Trash2 className="h-4 w-4" />
-                Xóa tài khoản
-              </button>
-              <button className="flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-2.5 font-semibold text-white transition-all hover:bg-gray-800">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-2.5 font-semibold text-white transition-all hover:bg-gray-800"
+              >
                 <LogOut className="h-4 w-4" />
                 Đăng xuất
               </button>
@@ -340,6 +439,107 @@ export const PersonalInfo = ({
           )}
         </div>
       </div>
+
+      {/* Avatar Change Modal */}
+      <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Đổi ảnh đại diện</DialogTitle>
+            <DialogDescription>
+              Chọn ảnh đại diện mới cho tài khoản của bạn
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <UploadImage
+              multiple={false}
+              endpoint={
+                process.env.NODE_ENV === 'production'
+                  ? 'https://flower.autopass.blog/api/files/upload'
+                  : 'http://localhost:8081/api/files/upload'
+              }
+              onChange={(url) => setAvatarUrl(url as string)}
+              maxFiles={1}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAvatarModalOpen(false);
+                setAvatarUrl('');
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleAvatarChange}
+              disabled={updateProfileMutation.isPending || !avatarUrl}
+            >
+              {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Change Modal */}
+      <Dialog
+        open={isPasswordModalOpen}
+        onOpenChange={handleClosePasswordModal}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Đổi mật khẩu</DialogTitle>
+            <DialogDescription>
+              Nhập mật khẩu cũ và mật khẩu mới để đổi mật khẩu
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="oldPassword">Mật khẩu cũ</Label>
+              <Input
+                id="oldPassword"
+                type="password"
+                placeholder="Nhập mật khẩu cũ"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Mật khẩu mới</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                placeholder="Nhập mật khẩu mới"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Xác nhận mật khẩu mới"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClosePasswordModal}>
+              Hủy
+            </Button>
+            <Button
+              onClick={handleChangePassword}
+              disabled={changePasswordMutation.isPending}
+            >
+              {changePasswordMutation.isPending
+                ? 'Đang xử lý...'
+                : 'Đổi mật khẩu'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

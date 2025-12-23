@@ -44,8 +44,8 @@ const RefundManagementPage = lazy(
 const FavoritesPage = lazy(
   () => import('@/components/favorites/FavoritesPage')
 );
-// const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccess/index'));
-// const PaymentFailurePage = lazy(() => import('@/pages/PaymentFailure/index'));
+const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccess/index'));
+const PaymentFailurePage = lazy(() => import('@/pages/PaymentFailure/index'));
 
 // ----------------------------------------------------------------------
 
@@ -170,14 +170,14 @@ export default function AppRouter() {
       path: '/auth/forgot-password/:resetToken',
       element: <CompleteForgotPasswordPage />
     },
-    // {
-    //   path: '/payment/success',
-    //   element: <PaymentSuccessPage />
-    // },
-    // {
-    //   path: '/payment/failure',
-    //   element: <PaymentFailurePage />
-    // },
+    {
+      path: '/payment/success',
+      element: <PaymentSuccessPage />
+    },
+    {
+      path: '/payment/failure',
+      element: <PaymentFailurePage />
+    },
     {
       path: '/auth/verify-email/:verificationToken',
       element: <VerifyEmailPage />

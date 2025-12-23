@@ -6,7 +6,6 @@ import {
   XCircle,
   Calendar,
   Gift,
-  AlertCircle,
   Copy,
   Eye,
   ChevronLeft,
@@ -28,6 +27,7 @@ import { useSearchParams } from 'react-router-dom';
 
 interface UserVoucher {
   userVoucherId: number;
+  voucherId?: number;
   assignedAt: string;
   isUsed: boolean;
   usedAt?: string;
@@ -161,14 +161,6 @@ export default function PersonalVouchers() {
                   <Calendar className="h-4 w-4" />
                   <span>HSD: {formatDate(voucher.endsAt)}</span>
                 </div>
-                {voucher.daysUntilExpiry !== null &&
-                  voucher.daysUntilExpiry !== undefined &&
-                  voucher.daysUntilExpiry <= 7 && (
-                    <div className="flex items-center gap-1 text-orange-600">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>Còn {voucher.daysUntilExpiry} ngày</span>
-                    </div>
-                  )}
               </div>
             </div>
           </div>
@@ -182,11 +174,6 @@ export default function PersonalVouchers() {
               <Eye className="mr-1 h-4 w-4" />
               Chi tiết
             </Button>
-            {voucher.isActive && (
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                Sử dụng ngay
-              </Button>
-            )}
           </div>
         </div>
       </CardContent>

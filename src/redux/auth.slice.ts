@@ -20,7 +20,7 @@ const authSlice = createSlice({
     },
     logout(state) {
       __helpers.cookie_delete('AT');
-      window.location.href = '/login';
+      window.location.href = '/';
       state.isLogin = false;
     },
     setInfoUser(state, action) {

@@ -26,7 +26,6 @@ const ProfilePage = () => {
     { id: 'orders', label: 'Đơn hàng', icon: Package, badge: 6 },
     { id: 'address', label: 'Địa chỉ', icon: MapPin },
     { id: 'refunds', label: 'Hoàn tiền', icon: Banknote },
-
     { id: 'vouchers', label: 'Mã giảm giá', icon: Tag }
   ];
 

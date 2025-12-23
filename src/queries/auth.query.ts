@@ -61,20 +61,11 @@ export const useCompletedForgotPassword = () => {
   });
 };
 
-export const useInitChangePassword = () => {
+export const useChangePassword = () => {
   return useMutation({
-    mutationKey: ['init-change-password'],
+    mutationKey: ['change-password'],
     mutationFn: async (model: any) => {
-      return BaseRequestV2.Post(`/api/user/change-password/initiate`, model);
-    }
-  });
-};
-
-export const useCompletedChangePassword = () => {
-  return useMutation({
-    mutationKey: ['completed-change-password'],
-    mutationFn: async (model: any) => {
-      return BaseRequestV2.Post(`/api/user/change-password/complete`, model);
+      return BaseRequestV2.Post(`/auth/change-password`, model);
     }
   });
 };

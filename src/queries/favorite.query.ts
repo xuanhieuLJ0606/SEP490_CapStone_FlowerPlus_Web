@@ -112,10 +112,8 @@ export const useFavoriteToggle = () => {
       // Update favorite status cache immediately
       queryClient.setQueryData(favoriteKeys.status(variables.productId), data);
 
-      // Invalidate and refetch to ensure UI updates
       queryClient.invalidateQueries({
-        queryKey: favoriteKeys.status(variables.productId),
-        refetchType: 'active'
+        queryKey: favoriteKeys.status(variables.productId)
       });
 
       // Invalidate favorites list to refresh

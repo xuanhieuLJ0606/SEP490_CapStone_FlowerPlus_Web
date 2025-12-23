@@ -384,13 +384,6 @@ export default function ProductDetailPage() {
               <ShoppingCart className="h-4 w-4" />
               Thêm vào giỏ hàng
             </Button>
-            <Button
-              size="default"
-              variant="secondary"
-              className="h-10 flex-1 text-sm"
-            >
-              Mua ngay
-            </Button>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Upload, X, ImageIcon } from 'lucide-react';
 import axios from 'axios';
+import helpers from '@/helpers';
 
 type UploadItem = {
   id: string;
@@ -112,19 +113,28 @@ export default function UploadImage({
     if (item.file) form.append('file', item.file);
 
     try {
+      const token = helpers.cookie_get('AT');
       const res = await axios.post(endpoint, form, {
         method: 'POST',
-        data: form
+        data: form,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(token && { Authorization: `Bearer ${token}` })
+        }
       });
 
-      // Handle new API response format
+      // Handle API response format
+      // Backend returns TFUResponse<String> which has structure: { data: string, message: string, success: boolean }
       let imageUrl = '';
       if (res.data) {
         if (typeof res.data === 'string') {
-          // Old format - direct URL
+          // Direct string response
           imageUrl = res.data;
+        } else if (res.data.data) {
+          // TFUResponse format: { data: string }
+          imageUrl = res.data.data;
         } else if (res.data.downloadUrl) {
-          // New format - extract downloadUrl from object
+          // Alternative format - extract downloadUrl from object
           imageUrl = res.data.downloadUrl;
         }
       }

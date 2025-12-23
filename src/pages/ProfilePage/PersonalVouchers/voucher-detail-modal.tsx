@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Tag,
   Calendar,
@@ -16,12 +17,16 @@ import {
   Copy,
   CheckCircle,
   AlertCircle,
-  Package
+  Package,
+  Receipt
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGetOrdersByVoucherId } from '@/queries/order.query';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserVoucher {
   userVoucherId: number;
+  voucherId?: number;
   assignedAt: string;
   isUsed: boolean;
   usedAt?: string;
@@ -53,6 +58,11 @@ export default function VoucherDetailModal({
   onClose
 }: VoucherDetailModalProps) {
   if (!voucher) return null;
+
+  const { data: ordersRes, isLoading: loadingOrders } = useGetOrdersByVoucherId(
+    voucher.voucherId
+  );
+  const orders = ordersRes?.data || [];
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(voucher.code);
@@ -119,7 +129,7 @@ export default function VoucherDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-green-600" />
@@ -245,6 +255,70 @@ export default function VoucherDetailModal({
                 </span>
               </div>
             )}
+
+          {/* Orders Section */}
+          {voucher.isUsed && voucher.voucherId && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-lg font-semibold">Đơn hàng đã sử dụng</h3>
+                </div>
+                {loadingOrders ? (
+                  <div className="space-y-2">
+                    {[...Array(2)].map((_, i) => (
+                      <Skeleton key={i} className="h-20 w-full" />
+                    ))}
+                  </div>
+                ) : orders.length > 0 ? (
+                  <div className="max-h-60 space-y-2 overflow-y-auto">
+                    {orders.map((order: any) => (
+                      <Card key={order.id}>
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="mb-1 flex items-center gap-2">
+                                <span className="font-mono text-sm font-medium">
+                                  #{order.orderCode}
+                                </span>
+                                {order.transaction?.status === 'SUCCESS' && (
+                                  <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">
+                                    Đã thanh toán
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Tổng tiền:{' '}
+                                <span className="font-semibold">
+                                  {order.total.toLocaleString()}đ
+                                </span>
+                                {order.discountAmount > 0 && (
+                                  <span className="ml-2 text-green-600">
+                                    (Đã giảm:{' '}
+                                    {order.discountAmount.toLocaleString()}đ)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-1 text-xs text-gray-500">
+                                {new Date(order.createdAt).toLocaleString(
+                                  'vi-VN'
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-sm text-gray-500">
+                    Chưa có đơn hàng nào sử dụng voucher này
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-3">

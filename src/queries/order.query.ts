@@ -87,6 +87,19 @@ export const useGetMyRefundRequests = () => {
   });
 };
 
+export const useGetOrdersByVoucherId = (voucherId: number | undefined) => {
+  return useQuery({
+    queryKey: ['orders-by-voucher', voucherId],
+    queryFn: () => {
+      if (!voucherId) return Promise.resolve({ data: [] });
+      return BaseRequest.Get(
+        `/orders/get-list-orders-by-user-and-voucher?voucherId=${voucherId}`
+      );
+    },
+    enabled: !!voucherId
+  });
+};
+
 export const useProcessRefund = () => {
   const queryClient = useQueryClient();
   return useMutation({

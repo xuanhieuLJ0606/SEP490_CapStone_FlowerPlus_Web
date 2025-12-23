@@ -177,23 +177,40 @@ export default function HomePage() {
   const apiProducts = resProducts?.listObjects || [];
 
   const { categorizedProducts } = useMemo(() => {
-    const transformed = apiProducts
-      .filter((p: ApiProduct) => p.isActive)
-      .map((p: ApiProduct, index: number) => transformApiProduct(p, index));
+    const activeProducts = apiProducts.filter((p: ApiProduct) => p.isActive);
+    const transformed = activeProducts.map((p: ApiProduct, index: number) =>
+      transformApiProduct(p, index)
+    );
+
+    // Tạo map để dễ dàng tìm product đã transform từ apiProduct id
+    const productMap = new Map<number, Product>();
+    transformed.forEach((product) => {
+      productMap.set(product.id, product);
+    });
 
     const categoryMap = new Map<number, CategoryGroup>();
 
-    transformed.forEach((product: Product) => {
-      if (product.categoryId && product.categoryName) {
-        if (!categoryMap.has(product.categoryId)) {
-          categoryMap.set(product.categoryId, {
-            id: product.categoryId,
-            name: product.categoryName,
+    // Lặp qua từng product và thêm vào tất cả categories của nó
+    activeProducts.forEach((apiProduct: ApiProduct) => {
+      const product = productMap.get(apiProduct.id);
+      if (!product) return;
+
+      // Lặp qua tất cả categories của product
+      apiProduct.categories.forEach((category) => {
+        if (!categoryMap.has(category.id)) {
+          categoryMap.set(category.id, {
+            id: category.id,
+            name: category.name,
             products: []
           });
         }
-        categoryMap.get(product.categoryId)!.products.push(product);
-      }
+        // Thêm product vào category này
+        const categoryGroup = categoryMap.get(category.id)!;
+        // Kiểm tra để tránh thêm trùng lặp
+        if (!categoryGroup.products.some((p) => p.id === product.id)) {
+          categoryGroup.products.push(product);
+        }
+      });
     });
 
     return {
@@ -661,7 +678,7 @@ export default function HomePage() {
                 </p>
               </div>
               <motion.a
-                href={`#category-${category.id}`}
+                href={`/products/${category.id}`}
                 className="group hidden items-center gap-2 font-semibold text-purple-600 md:flex"
                 whileHover={{ gap: 12 }}
                 transition={{ duration: 0.3 }}
