@@ -582,6 +582,13 @@ const OrderHistoryProfile = () => {
                                     Chưa cập nhật
                                   </p>
                                 )}
+                                {timelineItem.step === 'PREPARING' &&
+                                  !timelineItem.isCompleted && (
+                                    <span className="rounded-full py-0.5 text-xs font-medium text-red-500">
+                                      Trong trường hợp bạn muốn hủy đơn, vui
+                                      lòng liên hệ shop để được hỗ trợ.
+                                    </span>
+                                  )}
                               </div>
 
                               {/* Image thumbnail */}
