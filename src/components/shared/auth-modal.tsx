@@ -61,6 +61,12 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       onOpenChange(false);
       __helpers.cookie_set('AT', data.accessToken);
       window.location.reload();
+    } else {
+      toast({
+        title: 'Đăng nhập thất bại',
+        description: err?.data?.message || 'Đăng nhập thất bại',
+        variant: 'destructive'
+      });
     }
   };
 

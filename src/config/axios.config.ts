@@ -3,8 +3,7 @@ import helpers from '../helpers';
 
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://flower.autopass.blog/api'
-    // : 'https://api.flowerplus.site/swagger-ui/index.html#/';
+    ? 'https://api.flowerplus.site/api'
     : 'http://localhost:8081/api/';
 
 const onRequestSuccess = (config: any) => {

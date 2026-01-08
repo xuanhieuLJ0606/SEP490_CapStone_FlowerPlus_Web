@@ -114,9 +114,9 @@ export default function CompleteForgotPassword() {
           <CardFooter className="pb-6">
             <Button
               className="w-full bg-green-600 hover:bg-green-700"
-              onClick={() => (window.location.href = '/login')}
+              onClick={() => (window.location.href = '/')}
             >
-              Đến Trang Đăng Nhập
+              Trở lại trang chính
             </Button>
           </CardFooter>
         </Card>

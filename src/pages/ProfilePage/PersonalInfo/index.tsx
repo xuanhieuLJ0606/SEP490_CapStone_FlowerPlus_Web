@@ -454,7 +454,7 @@ export const PersonalInfo = ({
               multiple={false}
               endpoint={
                 process.env.NODE_ENV === 'production'
-                  ? 'https://flower.autopass.blog/api/files/upload'
+                  ? 'https://api.flowerplus.site/api/files/upload'
                   : 'http://localhost:8081/api/files/upload'
               }
               onChange={(url) => setAvatarUrl(url as string)}
