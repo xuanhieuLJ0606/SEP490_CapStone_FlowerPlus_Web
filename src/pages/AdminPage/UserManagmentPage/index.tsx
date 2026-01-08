@@ -17,7 +17,6 @@ export default function UserManagmentPage() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Danh sách người dùng</TabsTrigger>
-            <TabsTrigger value="add">Thêm người giao hàng</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <OverViewTab />

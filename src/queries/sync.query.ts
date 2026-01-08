@@ -74,26 +74,3 @@ export const useSyncAll = () => {
     }
   });
 };
-
-export interface SyncProductUpdatePayload {
-  category_id: number;
-  price: number;
-  product_id: number;
-  product_name: string;
-  product_string: string;
-}
-
-export const useSyncProductUpdate = () => {
-  return useMutation({
-    mutationFn: async (payload: SyncProductUpdatePayload) => {
-      // Gọi API backend để sync với AI service
-      return await BaseRequest.Put('/sync/products/update', {
-        category_id: payload.category_id,
-        price: payload.price,
-        product_id: payload.product_id,
-        product_name: payload.product_name,
-        product_string: payload.product_string
-      });
-    }
-  });
-};

@@ -15,7 +15,7 @@ export default function ListData({ data, pageCount }: TTableProps) {
       showAdd={false}
       heightTable="50dvh"
       placeHolderInputSearch="Tìm theo tên..."
-      showSearch={false}
+      showSearch={true}
     />
   );
 }

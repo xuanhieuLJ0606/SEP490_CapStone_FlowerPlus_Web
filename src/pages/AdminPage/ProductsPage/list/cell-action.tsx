@@ -4,7 +4,6 @@ import { useGetCategories } from '@/queries/categories.query';
 import { useGetListProductByPaging } from '@/queries/product.query';
 import { TYPE_PRODUCT } from './overview';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
-import { SyncItemButton } from '@/components/shared/sync-item-button';
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -245,7 +244,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         return;
       }
 
-      // Backend sẽ tự động sync với AI sau khi update thành công
       toast({
         title: 'Thành công',
         description: 'Cập nhật product thành công',
@@ -267,7 +265,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       if (err) {
         toast({
           title: 'Thất bại',
-          description: err.message || 'Xóa thất bại',
+          description:
+            err.message ||
+            'Xóa thất bại, có lỗi phát sinh hoặc do sản phẩm đang xóa dính đến sản phẩm khác đang hoạt động',
           variant: 'destructive'
         });
         return;
@@ -281,7 +281,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     } catch (error: any) {
       toast({
         title: 'Thất bại',
-        description: error?.message || 'Xóa thất bại',
+        description:
+          error?.message ||
+          'Xóa thất bại, có lỗi phát sinh hoặc do sản phẩm đang xóa dính đến sản phẩm khác đang hoạt động',
         variant: 'destructive'
       });
     }
@@ -356,7 +358,6 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   return (
     <div className="flex items-center gap-2">
       {/* Sync button */}
-      <SyncItemButton type="product" id={data.id} />
 
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <Button

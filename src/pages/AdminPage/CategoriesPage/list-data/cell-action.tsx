@@ -104,7 +104,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   return (
     <div className="flex items-center gap-2">
       {/* Sync button */}
-      <SyncItemButton type="category" id={data.id} />
+      <SyncItemButton type="category" />
 
       {/* Edit button */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>

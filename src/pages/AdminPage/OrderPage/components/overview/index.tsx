@@ -41,9 +41,14 @@ export function OverViewTab() {
   const page = Number(searchParams.get('page') || 1);
   const pageLimit = Number(searchParams.get('limit') || 10);
 
-  const { data: res, isPending } = useGetOrders();
+  const { data: resWithoutSort, isPending } = useGetOrders();
   const { data: refundData, isPending: isRefundPending } =
     useGetRefundRequests();
+  const res = {
+    data: resWithoutSort?.data?.sort((a: any, b: any) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+  };
 
   const { pagedData, totalRecords, pageCount } = React.useMemo(() => {
     if (!res?.data || !Array.isArray(res.data)) {

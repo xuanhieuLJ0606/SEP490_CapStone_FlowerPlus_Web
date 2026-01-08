@@ -264,6 +264,16 @@ export const createColumns = (refundData?: any): ColumnDef<any>[] => {
         );
       }
     },
+
+    {
+      accessorKey: 'createdAt',
+      header: 'Ngày tạo',
+      enableSorting: false,
+      cell: ({ row }) => {
+        const createdAt = row.original.createdAt;
+        return <span>{__helpers.convertToDate(createdAt)}</span>;
+      }
+    },
     {
       id: 'actions',
       header: 'Hành động',

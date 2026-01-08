@@ -212,7 +212,7 @@ export default function Header() {
 
   return (
     <>
-      <div className="sticky top-0 z-50 w-full">
+      <div className="sticky top-0 z-[40] w-full">
         <div className="animate-gradient-x overflow-hidden bg-gradient-to-r from-yellow-600 via-pink-400 to-rose-400 px-4 py-3 text-center text-sm font-medium text-white">
           <div className="animate-slide-in">
             🎉 Giảm Hoa Ngay Trong Khung Giờ 2 Tiếng! | Miễn phí giao hàng đơn

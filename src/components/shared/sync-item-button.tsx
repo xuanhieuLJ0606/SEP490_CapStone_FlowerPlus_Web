@@ -6,11 +6,10 @@ import { toast } from '@/components/ui/use-toast';
 
 interface SyncItemButtonProps {
   type: 'category' | 'product';
-  id: number;
   size?: 'sm' | 'md';
 }
 
-export function SyncItemButton({ type, id, size = 'sm' }: SyncItemButtonProps) {
+export function SyncItemButton({ type, size = 'sm' }: SyncItemButtonProps) {
   const queryClient = useQueryClient();
 
   const syncItem = useMutation({
