@@ -146,3 +146,22 @@ export const useUpdateDeliveryStatusImage = () => {
     }
   });
 };
+
+export const useUpdateOrderRequestDeliveryTime = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['update-order-request-delivery-time'],
+    mutationFn: async (data: {
+      orderId: number;
+      requestDeliveryTime: string;
+    }) => {
+      return BaseRequest.Put(`/orders/${data.orderId}/request-delivery-time`, {
+        requestDeliveryTime: data.requestDeliveryTime
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-by-user'] });
+    }
+  });
+};

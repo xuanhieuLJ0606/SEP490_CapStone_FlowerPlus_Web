@@ -26,7 +26,8 @@ export function OverViewTab() {
     size: pageLimit,
     userId: null,
     isUsed: isUsedFilter ? isUsedFilter === 'true' : undefined,
-    createdBy: createdByFilter || undefined
+    createdBy: createdByFilter || undefined,
+    searchTerm: search || undefined
   });
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +65,6 @@ export function OverViewTab() {
     setSearchParams(params);
   };
 
-  console.log(res?.data?.listObjects);
   const { pagedData, totalRecords, pageCount, stats } = React.useMemo(() => {
     if (!res?.data?.listObjects || !Array.isArray(res?.data?.listObjects)) {
       return {
@@ -82,21 +82,8 @@ export function OverViewTab() {
 
     const data = res?.data?.listObjects;
 
-    // Filter by search if needed (client-side for now)
-    const normalizedSearch = search.trim().toLowerCase();
-    const filteredData = normalizedSearch
-      ? data?.filter((voucher: any) => {
-          const code = (voucher.code || '').toString().toLowerCase();
-          const userName = (voucher.userName || '').toString().toLowerCase();
-          const userEmail = (voucher.userEmail || '').toString().toLowerCase();
-          const createdBy = (voucher.createdBy || '').toString().toLowerCase();
-
-          const target = `${code} ${userName} ${userEmail} ${createdBy}`;
-          return target.includes(normalizedSearch);
-        })
-      : data;
-
-    // Calculate stats
+    // Backend handles filtering, frontend just displays results
+    // Calculate stats from all data (not filtered)
     const usedVouchers = data.filter((v: any) => v.isUsed).length;
     const activeVouchers = data.filter(
       (v: any) => v.isActive && !v.isUsed
@@ -104,17 +91,17 @@ export function OverViewTab() {
     const expiredVouchers = data.filter((v: any) => v.isExpired).length;
 
     return {
-      pagedData: filteredData,
+      pagedData: data,
       totalRecords: res.data.totalElements || 0,
       pageCount: res.data.totalPages || 0,
       stats: {
-        totalVouchers: data.length,
+        totalVouchers: res.data.totalElements || 0,
         usedVouchers,
         activeVouchers,
         expiredVouchers
       }
     };
-  }, [res, search]);
+  }, [res]);
 
   return (
     <div className="space-y-6 p-4 pt-0">

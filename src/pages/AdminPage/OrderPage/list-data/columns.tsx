@@ -275,6 +275,39 @@ export const createColumns = (refundData?: any): ColumnDef<any>[] => {
       }
     },
     {
+      accessorKey: 'requestDeliveryTime',
+      header: 'Thời gian giao hàng',
+      enableSorting: false,
+      cell: ({ row }) => {
+        const requestDeliveryTime = row.original.requestDeliveryTime;
+        if (!requestDeliveryTime) {
+          return <span className="text-gray-400">Chưa có</span>;
+        }
+        // Display in UTC+7 (Vietnam timezone)
+        const date = new Date(requestDeliveryTime);
+
+        return (
+          <div className="min-w-[160px]">
+            <div className="text-sm font-medium">
+              {date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              })}
+            </div>
+            <div className="text-xs text-gray-500">
+              {date.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Ho_Chi_Minh'
+              })}
+            </div>
+          </div>
+        );
+      }
+    },
+    {
       id: 'actions',
       header: 'Hành động',
       cell: ({ row }) => <CellAction data={row.original} />

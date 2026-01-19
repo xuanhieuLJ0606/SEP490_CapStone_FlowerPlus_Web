@@ -80,6 +80,9 @@ export const useGetListProductToView = (page: number, size: number) => {
         `/products/get-list-product-view?active=true&pageNumber=${page}&pageSize=${size}`
       );
       return res.data;
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes - cache data for 5 minutes
+    refetchOnMount: false, // Don't refetch on mount if data is fresh
+    refetchOnWindowFocus: false // Don't refetch when window gains focus
   });
 };

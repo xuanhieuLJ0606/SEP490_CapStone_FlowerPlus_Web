@@ -14,10 +14,11 @@ import { toast } from '@/components/ui/use-toast';
 import {
   useAddTransactionToOrder,
   useUpdateDeliveryStatus,
-  useCancelOrder
+  useCancelOrder,
+  useUpdateOrderRequestDeliveryTime
 } from '@/queries/order.query';
 import { useGetProductByIdMutation } from '@/queries/product.query';
-import { Edit, PackageCheck, XCircle, AlertCircle } from 'lucide-react';
+import { Edit, PackageCheck, XCircle, AlertCircle, Clock } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import UploadImage from '@/components/shared/upload-image';
@@ -34,6 +35,70 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 interface CellActionProps {
   data: any;
 }
+
+// Helper functions for UTC+7 timezone conversion
+// Convert UTC string from server to UTC+7 datetime-local format for input
+const convertUTCToUTC7Local = (utcDateString: string): string => {
+  if (!utcDateString) return '';
+
+  // Parse UTC string
+  const utcDate = new Date(utcDateString);
+
+  // Get UTC components
+  const utcYear = utcDate.getUTCFullYear();
+  const utcMonth = utcDate.getUTCMonth();
+  const utcDay = utcDate.getUTCDate();
+  const utcHours = utcDate.getUTCHours();
+  const utcMinutes = utcDate.getUTCMinutes();
+
+  // Create a new date in UTC+7 by adding 7 hours
+  // Use Date.UTC to create UTC timestamp, then add 7 hours
+  const utc7Timestamp = Date.UTC(
+    utcYear,
+    utcMonth,
+    utcDay,
+    utcHours + 7,
+    utcMinutes
+  );
+  const utc7Date = new Date(utc7Timestamp);
+
+  // Get UTC components of the UTC+7 date (which represents the local time in UTC+7)
+  const year = utc7Date.getUTCFullYear();
+  const month = String(utc7Date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(utc7Date.getUTCDate()).padStart(2, '0');
+  const hours = String(utc7Date.getUTCHours()).padStart(2, '0');
+  const minutes = String(utc7Date.getUTCMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// Convert UTC+7 datetime-local string to format for server (yyyy-MM-ddTHH:mm:ss)
+// Send directly without timezone conversion (server expects UTC+7)
+const convertUTC7LocalToUTC = (utc7LocalString: string): string => {
+  if (!utc7LocalString) return '';
+
+  // Parse the datetime-local string (it's in UTC+7)
+  const [datePart, timePart] = utc7LocalString.split('T');
+  if (!datePart || !timePart) return '';
+
+  // Extract time components
+  const timeParts = timePart.split(':');
+  const hours = timeParts[0] || '00';
+  const minutes = timeParts[1] || '00';
+  const seconds = timeParts[2] || '00';
+
+  // Format as yyyy-MM-ddTHH:mm:ss (send UTC+7 directly, no conversion)
+  return `${datePart}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
+};
+
+const formatDateTimeLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 const deliveryStepMap: Record<string, string> = {
   PENDING_CONFIRMATION: 'Chờ xác nhận',
@@ -61,6 +126,8 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [openUpdateDeliveryTimeDialog, setOpenUpdateDeliveryTimeDialog] =
+    useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [finalAmount, setFinalAmount] = useState<string>('');
 
@@ -73,6 +140,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   // Cancel order states
   const [cancelReason, setCancelReason] = useState<string>('');
 
+  // Update delivery time states
+  const [requestDeliveryTime, setRequestDeliveryTime] = useState<string>('');
+
   const { mutateAsync: addTransactionToOrder, isPending } =
     useAddTransactionToOrder();
   const {
@@ -81,6 +151,10 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   } = useUpdateDeliveryStatus();
   const { mutateAsync: cancelOrder, isPending: isCancellingOrder } =
     useCancelOrder();
+  const {
+    mutateAsync: updateOrderRequestDeliveryTime,
+    isPending: isUpdatingDeliveryTime
+  } = useUpdateOrderRequestDeliveryTime();
   const { mutateAsync: getProductById } = useGetProductByIdMutation();
 
   const handleGetProductById = async (id: number) => {
@@ -273,6 +347,53 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   // Kiểm tra có thể hủy đơn không (chỉ khi đang PREPARING)
   const canCancelOrder = currentDeliveryStep === 'PREPARING';
 
+  const handleUpdateDeliveryTime = async () => {
+    if (!requestDeliveryTime.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng chọn thời gian giao hàng',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      // Convert UTC+7 datetime-local from input to UTC ISO string for server
+      const utcTimeString = convertUTC7LocalToUTC(requestDeliveryTime);
+
+      const [err] = await updateOrderRequestDeliveryTime({
+        orderId: data.id,
+        requestDeliveryTime: utcTimeString
+      });
+
+      if (err) {
+        toast({
+          title: 'Lỗi',
+          description:
+            err?.data?.message ||
+            err?.message ||
+            'Có lỗi xảy ra khi cập nhật thời gian giao hàng',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Thành công',
+        description: 'Đã cập nhật thời gian giao hàng thành công'
+      });
+
+      setOpenUpdateDeliveryTimeDialog(false);
+      setRequestDeliveryTime('');
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra khi cập nhật thời gian giao hàng',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -304,6 +425,29 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <XCircle className="size-4" />
           </Button>
         )}
+        <Button
+          className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700"
+          size="icon"
+          type="button"
+          onClick={() => {
+            if (data.requestDeliveryTime) {
+              // Convert UTC from server to UTC+7 datetime-local format
+              const formattedTime = convertUTCToUTC7Local(
+                data.requestDeliveryTime
+              );
+              setRequestDeliveryTime(formattedTime);
+            } else {
+              // Set current time in UTC+7
+              const now = new Date();
+              const utc7Now = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+              setRequestDeliveryTime(formatDateTimeLocal(utc7Now));
+            }
+            setOpenUpdateDeliveryTimeDialog(true);
+          }}
+          title="Cập nhật thời gian giao hàng"
+        >
+          <Clock className="size-4" />
+        </Button>
       </div>
 
       {/* Dialog chốt đơn / tạo transaction */}
@@ -634,6 +778,79 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
               disabled={isCancellingOrder || !cancelReason.trim()}
             >
               {isCancellingOrder ? 'Đang xử lý...' : 'Xác nhận hủy'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Request Delivery Time Dialog */}
+      <Dialog
+        open={openUpdateDeliveryTimeDialog}
+        onOpenChange={setOpenUpdateDeliveryTimeDialog}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-blue-700">
+              Cập nhật thời gian giao hàng
+            </DialogTitle>
+            <DialogDescription>
+              Cập nhật thời gian giao hàng mong muốn cho đơn hàng #
+              {data.orderCode}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="requestDeliveryTime"
+                className="text-base font-semibold"
+              >
+                Thời gian giao hàng mong muốn{' '}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="requestDeliveryTime"
+                type="datetime-local"
+                value={requestDeliveryTime}
+                onChange={(e) => setRequestDeliveryTime(e.target.value)}
+                min={formatDateTimeLocal(new Date())}
+                className="w-full"
+              />
+              {data.requestDeliveryTime && (
+                <p className="text-xs text-gray-500">
+                  Thời gian hiện tại:{' '}
+                  {new Date(data.requestDeliveryTime).toLocaleString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Asia/Ho_Chi_Minh'
+                  })}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                type="button"
+                disabled={isUpdatingDeliveryTime}
+              >
+                Hủy
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={handleUpdateDeliveryTime}
+              disabled={isUpdatingDeliveryTime || !requestDeliveryTime.trim()}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {isUpdatingDeliveryTime
+                ? 'Đang cập nhật...'
+                : 'Cập nhật thời gian'}
             </Button>
           </DialogFooter>
         </DialogContent>

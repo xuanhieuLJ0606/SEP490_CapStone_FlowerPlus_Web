@@ -10,3 +10,16 @@ export const useGetDashboard = () => {
     }
   });
 };
+
+export const useGetQuarterlyRevenueByYear = (year?: number) => {
+  return useQuery({
+    queryKey: ['quarterly-revenue', year],
+    queryFn: () => {
+      const url = year
+        ? `/dashboard/quarterly-revenue?year=${year}`
+        : '/dashboard/quarterly-revenue';
+      return BaseRequest.Get(url);
+    },
+    enabled: true
+  });
+};

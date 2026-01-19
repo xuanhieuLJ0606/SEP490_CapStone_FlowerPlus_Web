@@ -55,8 +55,9 @@ export const useFavoriteStatus = (
     },
     enabled:
       options?.enabled !== false && !!productId && !!__helpers.cookie_get('AT'),
-    staleTime: 30 * 1000, // 30 seconds - shorter to allow faster updates
-    refetchOnMount: 'always'
+    staleTime: 5 * 60 * 1000, // 5 minutes - same as other queries
+    refetchOnMount: false, // Don't refetch on mount, rely on cache
+    refetchOnWindowFocus: false // Don't refetch when window gains focus
   });
 };
 
@@ -249,11 +250,8 @@ export const useOptimisticFavoriteToggle = () => {
         optimisticData
       );
 
-      // Force refetch to ensure UI updates immediately
-      queryClient.refetchQueries({
-        queryKey: favoriteKeys.status(request.productId),
-        type: 'active'
-      });
+      // No need to force refetch - setQueryData already updates the UI
+      // The mutation's onSuccess will handle cache invalidation if needed
 
       // Update status maps optimistically
       queryClient.setQueriesData(

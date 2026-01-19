@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { useUpdateVoucher, useDeleteVoucher } from '@/queries/voucher.query';
-import { PencilIcon, Trash2Icon, EyeIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { useGetListProductByPaging } from '@/queries/product.query';
+import { TYPE_PRODUCT } from '@/pages/AdminPage/ProductsPage/list/overview';
+import { PencilIcon, Trash2Icon, EyeIcon, Package } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +54,23 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+
+  const { data: productsRes } = useGetListProductByPaging(
+    1,
+    1000,
+    '',
+    TYPE_PRODUCT.PRODUCT
+  );
+
+  // Get products that are in the voucher's productIds
+  const applicableProducts = useMemo(() => {
+    if (!data.productIds || data.productIds.length === 0) return [];
+    if (!productsRes?.listObjects) return [];
+
+    return productsRes.listObjects.filter((product: any) =>
+      data.productIds?.includes(product.id)
+    );
+  }, [data.productIds, productsRes]);
 
   // Form states
   const [code, setCode] = useState(data.code);
@@ -257,13 +277,91 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <span className="font-medium">Áp dụng:</span>
-              <span>
-                {data.applyAllProducts
-                  ? 'Tất cả sản phẩm'
-                  : `${data.productIds?.length || 0} sản phẩm`}
-              </span>
+              <div>
+                {data.applyAllProducts ? (
+                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                    Tất cả sản phẩm
+                  </Badge>
+                ) : (
+                  <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                    Giới hạn sản phẩm ({data.productIds?.length || 0} sản phẩm)
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Product List Section */}
+          {!data.applyAllProducts &&
+            data.productIds &&
+            data.productIds.length > 0 && (
+              <div className="mt-4 border-t pt-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-muted-foreground" />
+                  <h3 className="font-semibold">Danh sách sản phẩm áp dụng</h3>
+                  <Badge variant="secondary" className="ml-2">
+                    {data.productIds.length} sản phẩm
+                  </Badge>
+                </div>
+                {applicableProducts.length > 0 ? (
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {applicableProducts.map((product: any) => {
+                      const parseImages = (images: string) => {
+                        try {
+                          const parsed = JSON.parse(images);
+                          return Array.isArray(parsed) && parsed.length > 0
+                            ? parsed[0]
+                            : null;
+                        } catch {
+                          return null;
+                        }
+                      };
+                      const firstImage = parseImages(product.images);
+
+                      return (
+                        <div
+                          key={product.id}
+                          className="flex items-center gap-3 rounded-lg border p-3"
+                        >
+                          {firstImage ? (
+                            <img
+                              src={firstImage}
+                              alt={product.name}
+                              className="h-12 w-12 rounded-md border object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-md border bg-muted">
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium">{product.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {product.categories?.[0]?.name ||
+                                'Chưa phân loại'}
+                            </p>
+                          </div>
+                          {product.isActive ? (
+                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                              Đang bán
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+                              Tạm dừng
+                            </Badge>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    Đang tải thông tin sản phẩm...
+                  </div>
+                )}
+              </div>
+            )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button size="sm" className="bg-gray-200 text-gray-700">

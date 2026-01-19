@@ -8,6 +8,7 @@ export const useGetPersonalVouchers = (params?: {
   userId?: number | null;
   isUsed?: boolean;
   createdBy?: string;
+  searchTerm?: string;
 }) => {
   return useQuery({
     queryKey: ['personal-vouchers', params],
@@ -22,6 +23,8 @@ export const useGetPersonalVouchers = (params?: {
       if (params?.isUsed !== undefined)
         searchParams.append('isUsed', params.isUsed.toString());
       if (params?.createdBy) searchParams.append('createdBy', params.createdBy);
+      if (params?.searchTerm)
+        searchParams.append('searchTerm', params.searchTerm);
 
       const queryString = searchParams.toString();
       const url = queryString
@@ -102,6 +105,37 @@ export const useDeleteAllPersonalVouchersForUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personal-vouchers'] });
     }
+  });
+};
+
+export const useUpdatePersonalVoucher = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['update-personal-voucher'],
+    mutationFn: async (data: { voucherId: number; payload: any }) => {
+      console.log('Calling API: PUT /vouchers/' + data.voucherId, data.payload);
+      // Update the underlying voucher which affects all personal vouchers with this voucherId
+      const result = await BaseRequest.Put(
+        `/vouchers/${data.voucherId}`,
+        data.payload
+      );
+      console.log('API Response:', result);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['personal-vouchers'] });
+      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+    }
+  });
+};
+
+export const useGetPersonalVoucherById = (userVoucherId: number) => {
+  return useQuery({
+    queryKey: ['personal-voucher', userVoucherId],
+    queryFn: () => {
+      return BaseRequest.Get(`/personal-vouchers/admin/${userVoucherId}`);
+    },
+    enabled: !!userVoucherId
   });
 };
 

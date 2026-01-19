@@ -5,6 +5,8 @@ import { useGetDashboard } from '@/queries/admin.query';
 import { useGetRefundRequests } from '@/queries/order.query';
 import { StatsCard } from './stats-card';
 import { RevenueChart } from './revenue-chart';
+import { QuarterlyRevenueChart } from './quarterly-revenue-chart';
+import { BestSellerProducts } from './best-seller-products';
 import { OrdersChart } from './orders-chart';
 import { StatusBarChart } from './status-bar-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -171,6 +173,20 @@ export default function Dashboard() {
 
               {correctedDashboardData?.monthlyRevenue && (
                 <RevenueChart data={correctedDashboardData.monthlyRevenue} />
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+              {correctedDashboardData?.quarterlyRevenue && (
+                <QuarterlyRevenueChart
+                  data={correctedDashboardData.quarterlyRevenue}
+                />
+              )}
+
+              {correctedDashboardData?.bestSellerProducts && (
+                <BestSellerProducts
+                  data={correctedDashboardData.bestSellerProducts}
+                />
               )}
             </div>
           </TabsContent>

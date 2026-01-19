@@ -25,6 +25,7 @@ export type PersonalVoucher = {
   usageLimit?: number;
   usedCount: number;
   applyAllProducts: boolean;
+  productIds?: number[];
   isExpired: boolean;
   isActive: boolean;
   remainingUsage?: number;
@@ -179,6 +180,26 @@ export const columns: ColumnDef<PersonalVoucher>[] = [
             <div className="text-xs text-gray-500">
               Còn {voucher.remainingUsage}
             </div>
+          )}
+        </div>
+      );
+    }
+  },
+  {
+    accessorKey: 'applyAllProducts',
+    header: 'Áp dụng',
+    cell: ({ row }) => {
+      const voucher = row.original;
+      return (
+        <div className="text-sm">
+          {voucher.applyAllProducts ? (
+            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+              Tất cả sản phẩm
+            </Badge>
+          ) : (
+            <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+              Giới hạn sản phẩm
+            </Badge>
           )}
         </div>
       );

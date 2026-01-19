@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -30,8 +32,10 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { useCreateBulkPersonalVouchers } from '@/queries/personal-voucher.query';
+import { useGetListProductByPaging } from '@/queries/product.query';
+import { TYPE_PRODUCT } from '@/pages/AdminPage/ProductsPage/list/overview';
 import { toast } from 'sonner';
-import { Loader2, Users, AlertCircle } from 'lucide-react';
+import { Loader2, Users, AlertCircle, Package } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import MultiUserSelector from '../multi-user-selector';
 
@@ -52,6 +56,7 @@ const formSchema = z
     endsAt: z.string().optional(),
     usageLimit: z.number().min(1).optional(),
     applyAllProducts: z.boolean().default(true),
+    productIds: z.array(z.number()).optional(),
     description: z.string().optional()
   })
   .refine(
@@ -75,7 +80,14 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateBulkVouchers() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const createBulkVouchers = useCreateBulkPersonalVouchers();
+  const { data: resProducts } = useGetListProductByPaging(
+    1,
+    100,
+    '',
+    TYPE_PRODUCT.PRODUCT
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -88,6 +100,31 @@ export default function CreateBulkVouchers() {
 
   const watchType = form.watch('type');
   const watchUserIds = form.watch('targetUserIds');
+  const applyAllProducts = form.watch('applyAllProducts');
+  const products = resProducts?.listObjects || [];
+
+  const parseImages = (images: string) => {
+    try {
+      const parsed = JSON.parse(images);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleProductToggle = (productId: number, checked: boolean) => {
+    setSelectedProducts((prev) => {
+      const isCurrentlySelected = prev.includes(productId);
+
+      if (checked && !isCurrentlySelected) {
+        return [...prev, productId];
+      } else if (!checked && isCurrentlySelected) {
+        return prev.filter((id) => id !== productId);
+      }
+
+      return prev;
+    });
+  };
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -101,7 +138,8 @@ export default function CreateBulkVouchers() {
           : undefined,
         endsAt: values.endsAt
           ? new Date(values.endsAt).toISOString()
-          : undefined
+          : undefined,
+        productIds: applyAllProducts ? [] : selectedProducts
       };
 
       const response = await createBulkVouchers.mutateAsync(payload);
@@ -410,6 +448,86 @@ export default function CreateBulkVouchers() {
                 )}
               />
 
+              {/* Product Selection */}
+              {!applyAllProducts && (
+                <div className="space-y-3 rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">
+                      Chọn sản phẩm ({selectedProducts.length} đã chọn)
+                    </p>
+                    {selectedProducts.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedProducts([])}
+                      >
+                        Bỏ chọn tất cả
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid max-h-96 grid-cols-1 gap-3 overflow-y-auto p-1 md:grid-cols-2">
+                    {products.map((product: any) => {
+                      const firstImage = parseImages(product.images);
+                      const isSelected = selectedProducts.includes(product.id);
+
+                      return (
+                        <label
+                          key={product.id}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${
+                            isSelected
+                              ? 'border-rose-500 bg-rose-50 shadow-md'
+                              : 'border-rose-200 bg-white hover:border-rose-300 hover:bg-rose-50/50'
+                          }`}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) =>
+                              handleProductToggle(
+                                product.id,
+                                checked as boolean
+                              )
+                            }
+                            className="border-rose-300 data-[state=checked]:border-rose-500 data-[state=checked]:bg-rose-500"
+                          />
+                          {firstImage ? (
+                            <img
+                              src={firstImage}
+                              alt={product.name}
+                              className="h-16 w-16 rounded-md border border-rose-200 object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-16 w-16 items-center justify-center rounded-md border border-rose-200 bg-rose-100">
+                              <Package className="h-8 w-8 text-rose-300" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">
+                              {product.name}
+                            </p>
+                            <p className="truncate text-sm">
+                              {product.categories?.[0]?.name ||
+                                'Chưa phân loại'}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              {product.isActive ? (
+                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                                  Đang bán
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+                                  Tạm dừng
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               <FormField
                 control={form.control}
@@ -439,6 +557,7 @@ export default function CreateBulkVouchers() {
                   onClick={() => {
                     form.reset();
                     setResult(null);
+                    setSelectedProducts([]);
                   }}
                 >
                   Đặt lại
