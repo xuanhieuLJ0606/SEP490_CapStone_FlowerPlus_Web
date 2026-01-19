@@ -492,6 +492,25 @@ const OrderHistoryProfile = () => {
                                 )}
                               </span>
                             </div>
+                            {order.requestDeliveryTime && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">
+                                  Thời gian giao hàng mong muốn:
+                                </span>
+                                <span className="font-medium text-gray-900">
+                                  {new Date(
+                                    order.requestDeliveryTime
+                                  ).toLocaleString('vi-VN', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    timeZone: 'Asia/Ho_Chi_Minh'
+                                  })}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex justify-between">
                               <span className="text-gray-600">Tổng tiền:</span>
                               <span className="font-bold text-rose-600">

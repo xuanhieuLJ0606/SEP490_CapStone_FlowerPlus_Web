@@ -30,7 +30,12 @@ const formSchema = z
     confirmPassword: z
       .string()
       .min(6, { message: 'Xác nhận mật khẩu tối thiểu 6 ký tự' }),
-    phone: z.string().min(8, { message: 'SĐT không hợp lệ' }),
+    phone: z
+      .string()
+      .min(1, { message: 'Số điện thoại không được để trống' })
+      .regex(/^(0|\+84)[0-9]{9,10}$/, {
+        message: 'Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84912345678)'
+      }),
     age: z
       .number({ invalid_type_error: 'Tuổi phải là số' })
       .int('Tuổi phải là số nguyên')

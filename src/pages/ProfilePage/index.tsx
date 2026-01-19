@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { User, Package, MapPin, Tag, Banknote } from 'lucide-react';
+import { usePathname } from '@/routes/hooks';
 import OrderHistoryProfile from './Order';
 import { PersonalInfo } from './PersonalInfo';
 import { useGetMyInfo } from '@/queries/auth.query';
@@ -20,16 +21,32 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('info');
   const { data: resUser, isPending } = useGetMyInfo();
   const userData = resUser;
+  const pathname = usePathname();
 
-  const menuItems = [
-    { id: 'info', label: 'Thông tin cá nhân', icon: User },
-    { id: 'orders', label: 'Đơn hàng', icon: Package, badge: 6 },
-    { id: 'address', label: 'Địa chỉ', icon: MapPin },
-    { id: 'refunds', label: 'Hoàn tiền', icon: Banknote },
-    { id: 'vouchers', label: 'Mã giảm giá', icon: Tag }
-  ];
+  // Kiểm tra nếu là admin profile (route /admin/profile)
+  const isAdminProfile = pathname?.includes('/admin/profile');
+
+  // Menu items - chỉ hiển thị thông tin cá nhân cho admin
+  const menuItems = useMemo(() => {
+    if (isAdminProfile) {
+      return [{ id: 'info', label: 'Thông tin cá nhân', icon: User }];
+    }
+    return [
+      { id: 'info', label: 'Thông tin cá nhân', icon: User },
+      { id: 'orders', label: 'Đơn hàng', icon: Package, badge: 6 },
+      { id: 'address', label: 'Địa chỉ', icon: MapPin },
+      { id: 'refunds', label: 'Hoàn tiền', icon: Banknote },
+      { id: 'vouchers', label: 'Mã giảm giá', icon: Tag }
+    ];
+  }, [isAdminProfile]);
 
   const renderContent = () => {
+    // Nếu là admin profile, chỉ hiển thị thông tin cá nhân
+    if (isAdminProfile) {
+      return <PersonalInfo userData={userData} isPending={isPending} />;
+    }
+
+    // User profile - hiển thị tất cả các tab
     switch (activeTab) {
       case 'info':
         return <PersonalInfo userData={userData} isPending={isPending} />;
@@ -61,16 +78,27 @@ const ProfilePage = () => {
             {/* User Card */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-6 flex flex-col items-center">
-                <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-red-800 to-red-900 text-4xl font-bold text-white shadow-lg">
-                  <img
-                    src={userData?.avatar}
-                    alt="avatar"
-                    className="h-full w-full rounded-full object-cover"
-                  />
+                <div className="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-red-800 to-red-900 text-4xl font-bold text-white shadow-lg">
+                  {userData?.avatar ? (
+                    <img
+                      src={userData.avatar}
+                      alt="avatar"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-3xl">
+                      {userData?.firstName?.[0]?.toUpperCase() ||
+                        userData?.userName?.[0]?.toUpperCase() ||
+                        'U'}
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-center text-xl font-bold text-gray-900">
-                  {userData?.firstName} {userData?.lastName}
+                  {userData?.firstName || ''} {userData?.lastName || ''}
                 </h3>
+                {userData?.email && (
+                  <p className="mt-1 text-sm text-gray-500">{userData.email}</p>
+                )}
               </div>
 
               {/* Menu */}

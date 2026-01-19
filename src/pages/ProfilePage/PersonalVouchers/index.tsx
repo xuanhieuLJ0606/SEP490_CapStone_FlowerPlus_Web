@@ -2,19 +2,17 @@ import { useState } from 'react';
 import {
   Tag,
   Clock,
-  CheckCircle,
   XCircle,
   Calendar,
   Gift,
   Copy,
-  Eye,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
   useGetMyActivePersonalVouchers,
   useGetMyPersonalVoucherCount,
@@ -82,11 +80,6 @@ export default function PersonalVouchers() {
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast.success('Đã sao chép mã voucher!');
-  };
-
-  const handleViewDetails = (voucher: UserVoucher) => {
-    setSelectedVoucher(voucher);
-    setShowDetailModal(true);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -163,17 +156,6 @@ export default function PersonalVouchers() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleViewDetails(voucher)}
-            >
-              <Eye className="mr-1 h-4 w-4" />
-              Chi tiết
-            </Button>
           </div>
         </div>
       </CardContent>
@@ -284,25 +266,6 @@ export default function PersonalVouchers() {
 
       {/* Voucher Tabs */}
       <Tabs defaultValue="active" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Có thể dùng ({activeVouchers.length})
-          </TabsTrigger>
-          <TabsTrigger value="all" className="flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            Tất cả ({totalElements})
-          </TabsTrigger>
-          <TabsTrigger value="used" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Đã dùng ({usedVouchers.length})
-          </TabsTrigger>
-          <TabsTrigger value="expired" className="flex items-center gap-2">
-            <XCircle className="h-4 w-4" />
-            Hết hạn ({expiredVouchers.length})
-          </TabsTrigger>
-        </TabsList>
-
         <TabsContent value="active" className="space-y-4">
           {loadingActive ? (
             <div className="grid gap-4">

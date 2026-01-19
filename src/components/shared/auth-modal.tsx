@@ -97,10 +97,29 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       !registerData.userName ||
       !registerData.email ||
       !registerData.password ||
-      !registerData.firstName
+      !registerData.firstName ||
+      !registerData.phone
     ) {
+      toast({
+        title: 'Vui lòng điền đầy đủ thông tin',
+        description: 'Số điện thoại là bắt buộc',
+        variant: 'destructive'
+      });
       return;
     }
+
+    // Validate phone format (VN: 0xxxxxxxxx or +84xxxxxxxxx)
+    const phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
+    if (!phoneRegex.test(registerData.phone.replace(/\s/g, ''))) {
+      toast({
+        title: 'Số điện thoại không hợp lệ',
+        description:
+          'Vui lòng nhập số điện thoại đúng định dạng (VD: 0912345678 hoặc +84912345678)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     const [err] = (await registerMutate?.(registerData)) ?? [true];
     console.log(err);
     if (!err) {
@@ -435,7 +454,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                       htmlFor="register-phone"
                       className="text-sm font-medium text-foreground"
                     >
-                      Số điện thoại
+                      Số điện thoại <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -447,9 +466,14 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                         value={registerData.phone}
                         onChange={handleRegisterChange}
                         className="focus:border-floral-accent focus:ring-floral-accent/20 h-11 border-border pl-10"
+                        required
+                        pattern="^(0|\+84)[0-9]{9,10}$"
                         disabled={isRegisterLoading}
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Định dạng: 0912345678 hoặc +84912345678
+                    </p>
                   </div>
 
                   <Button
