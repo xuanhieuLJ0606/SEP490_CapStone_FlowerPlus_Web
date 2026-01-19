@@ -39,6 +39,8 @@ import { useAuth } from '@/routes/hooks/use.auth';
 import { Icons } from '../ui/icons';
 import __helpers from '@/helpers';
 import { useGetMyInfo } from '@/queries/user.query';
+import NotificationDropdown from './NotificationDropdown';
+
 export const company = {
   name: 'Flower Plus',
   logo: Cow
@@ -74,12 +76,15 @@ export default function AppSidebar() {
       className="border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
     >
       <SidebarHeader className=" py-2">
-        <div className="flex items-center gap-3 py-2 text-rose-700 dark:text-rose-400">
-          <div>{/* <company.logo className="size-5" /> */}</div>
-          <div className="grid flex-1 text-left leading-tight">
-            <span className="truncate text-lg font-bold">{company.name}</span>
-            <span className="truncate text-xs text-rose-600/80 dark:text-rose-400/80"></span>
+        <div className="flex items-center justify-between gap-3 py-2">
+          <div className="flex items-center gap-3 text-rose-700 dark:text-rose-400">
+            <div>{/* <company.logo className="size-5" /> */}</div>
+            <div className="grid flex-1 text-left leading-tight">
+              <span className="truncate text-lg font-bold">{company.name}</span>
+              <span className="truncate text-xs text-rose-600/80 dark:text-rose-400/80"></span>
+            </div>
           </div>
+          <NotificationDropdown />
         </div>
       </SidebarHeader>
 
@@ -226,7 +231,7 @@ export default function AppSidebar() {
                 sideOffset={6}
               >
                 <DropdownMenuItem
-                  onClick={() => router.push(`/user-profile`)}
+                  onClick={() => router.push(`/admin/profile`)}
                   className="cursor-pointer gap-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <User size={17} className="text-slate-500" />
