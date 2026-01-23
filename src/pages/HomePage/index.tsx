@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   Star,
@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import FavoriteButton from '@/components/favorites/FavoriteButton';
 import { useGetListProductToView } from '@/queries/product.query';
+import { useGetPersonalizedRecommendations } from '@/queries/recommendation.query';
+import __helpers from '@/helpers';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -164,128 +166,21 @@ const transformApiProduct = (
   };
 };
 
-export default function HomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
-
-  const { data: resProducts, isLoading } = useGetListProductToView(1, 100);
-  const { mutateAsync: addItemToCart } = useAddItemToCart();
-
-  const apiProducts = resProducts?.listObjects || [];
-
-  const { categorizedProducts } = useMemo(() => {
-    const activeProducts = apiProducts.filter((p: ApiProduct) => p.isActive);
-    const transformed = activeProducts.map((p: ApiProduct, index: number) =>
-      transformApiProduct(p, index)
-    );
-
-    // Tạo map để dễ dàng tìm product đã transform từ apiProduct id
-    const productMap = new Map<number, Product>();
-    transformed.forEach((product) => {
-      productMap.set(product.id, product);
-    });
-
-    const categoryMap = new Map<number, CategoryGroup>();
-
-    // Lặp qua từng product và thêm vào tất cả categories của nó
-    activeProducts.forEach((apiProduct: ApiProduct) => {
-      const product = productMap.get(apiProduct.id);
-      if (!product) return;
-
-      // Lặp qua tất cả categories của product
-      apiProduct.categories.forEach((category) => {
-        if (!categoryMap.has(category.id)) {
-          categoryMap.set(category.id, {
-            id: category.id,
-            name: category.name,
-            products: []
-          });
-        }
-        // Thêm product vào category này
-        const categoryGroup = categoryMap.get(category.id)!;
-        // Kiểm tra để tránh thêm trùng lặp
-        if (!categoryGroup.products.some((p) => p.id === product.id)) {
-          categoryGroup.products.push(product);
-        }
-      });
-    });
-
-    return {
-      allProducts: transformed,
-      categorizedProducts: Array.from(categoryMap.values()).filter(
-        (cat) => cat.products.length > 0
-      )
-    };
-  }, [apiProducts]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % BANNER_IMAGES.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, []); // Empty dependency array
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % BANNER_IMAGES.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + BANNER_IMAGES.length) % BANNER_IMAGES.length
-    );
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
-
-  const handleAddToCart = async (
-    e: React.MouseEvent,
-    productId: number,
-    productName: string
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const payload = {
-      productId: productId,
-      quantity: 1
-    };
-    const [error] = await addItemToCart(payload);
-
-    if (error) {
-      toast({
-        title: 'Thêm sản phẩm vào giỏ hàng thất bại',
-        description:
-          error.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    toast({
-      title: 'Thêm sản phẩm vào giỏ hàng thành công',
-      description: `${productName} đã được thêm vào giỏ hàng`,
-      variant: 'default'
-    });
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const ProductCard = ({ product }: { product: Product; index: number }) => {
+// ProductCard component moved outside to prevent re-creation on re-render
+const ProductCard = memo(
+  ({
+    product,
+    onAddToCart
+  }: {
+    product: Product;
+    index: number;
+    onAddToCart: (
+      e: React.MouseEvent,
+      productId: number,
+      productName: string,
+      stock: number | null | undefined
+    ) => void;
+  }) => {
     const discountPercent = product.originalPrice
       ? Math.round((1 - product.price / product.originalPrice) * 100)
       : 0;
@@ -345,12 +240,23 @@ export default function HomePage() {
               transition={{ duration: 0.3 }}
             >
               <motion.button
-                onClick={(e) => handleAddToCart(e, product.id, product.name)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-semibold text-rose-600 shadow-lg transition-all hover:bg-rose-600 hover:text-white"
+                onClick={(e) =>
+                  onAddToCart(e, product.id, product.name, product.stock)
+                }
+                disabled={
+                  product.stock == null ||
+                  product.stock == undefined ||
+                  product.stock <= 0
+                }
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-semibold text-rose-600 shadow-lg transition-all hover:bg-rose-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-rose-600"
                 whileTap={{ scale: 0.98 }}
               >
                 <ShoppingCart className="h-5 w-5" />
-                Thêm vào giỏ hàng
+                {product.stock == null ||
+                product.stock == undefined ||
+                product.stock <= 0
+                  ? 'Hết hàng'
+                  : 'Thêm vào giỏ hàng'}
               </motion.button>
             </motion.div>
           </div>
@@ -393,7 +299,7 @@ export default function HomePage() {
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               <span className="text-sm font-semibold text-gray-700">
-                {product.rating}
+                {product.rating.toFixed(1)}
               </span>
             </div>
             <span className="text-xs text-gray-500">
@@ -414,8 +320,15 @@ export default function HomePage() {
               )}
             </div>
             <motion.button
-              onClick={(e) => handleAddToCart(e, product.id, product.name)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-lg transition-all hover:shadow-xl"
+              onClick={(e) =>
+                onAddToCart(e, product.id, product.name, product.stock)
+              }
+              disabled={
+                product.stock == null ||
+                product.stock == undefined ||
+                product.stock <= 0
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -425,6 +338,184 @@ export default function HomePage() {
         </div>
       </motion.div>
     );
+  },
+  (prevProps, nextProps) => {
+    // Only re-render if product data actually changes
+    return (
+      prevProps.product.id === nextProps.product.id &&
+      prevProps.product.stock === nextProps.product.stock &&
+      prevProps.product.price === nextProps.product.price
+    );
+  }
+);
+
+export default function HomePage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const { scrollYProgress } = useScroll();
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
+
+  const { data: resProducts, isLoading } = useGetListProductToView(1, 100);
+  const { mutateAsync: addItemToCart } = useAddItemToCart();
+
+  // Check if user is logged in
+  const accessToken = __helpers.cookie_get('AT');
+
+  // Get personalized recommendations if user is logged in (backend will get userId from token)
+  const { data: recommendationsData, isLoading: isLoadingRecommendations } =
+    useGetPersonalizedRecommendations(8, !!accessToken);
+
+  const apiProducts = resProducts?.listObjects || [];
+
+  const { categorizedProducts } = useMemo(() => {
+    const activeProducts = apiProducts.filter((p: ApiProduct) => p.isActive);
+    const transformed = activeProducts.map((p: ApiProduct, index: number) =>
+      transformApiProduct(p, index)
+    );
+
+    // Tạo map để dễ dàng tìm product đã transform từ apiProduct id
+    const productMap = new Map<number, Product>();
+    transformed.forEach((product) => {
+      productMap.set(product.id, product);
+    });
+
+    const categoryMap = new Map<number, CategoryGroup>();
+
+    // Lặp qua từng product và thêm vào tất cả categories của nó
+    activeProducts.forEach((apiProduct: ApiProduct) => {
+      const product = productMap.get(apiProduct.id);
+      if (!product) return;
+
+      // Lặp qua tất cả categories của product
+      apiProduct.categories.forEach((category) => {
+        if (!categoryMap.has(category.id)) {
+          categoryMap.set(category.id, {
+            id: category.id,
+            name: category.name,
+            products: []
+          });
+        }
+        // Thêm product vào category này
+        const categoryGroup = categoryMap.get(category.id)!;
+        // Kiểm tra để tránh thêm trùng lặp
+        if (!categoryGroup.products.some((p) => p.id === product.id)) {
+          categoryGroup.products.push(product);
+        }
+      });
+    });
+
+    return {
+      allProducts: transformed,
+      categorizedProducts: Array.from(categoryMap.values()).filter(
+        (cat) => cat.products.length > 0
+      )
+    };
+  }, [apiProducts]);
+
+  // Transform recommendations to Product format
+  const recommendedProducts = useMemo(() => {
+    if (!recommendationsData?.recommendations) return [];
+
+    return recommendationsData.recommendations.map((rec) => {
+      const images = parseImages(rec.images);
+      const image =
+        images.length > 0
+          ? images[0]
+          : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTixbrVNY9XIHQBZ1iehMIV0Z9AtHB9dp46lg&s';
+
+      return {
+        id: rec.product_id,
+        name: rec.name,
+        price: rec.price,
+        rating: 4.5 + Math.random() * 0.5,
+        reviews: Math.floor(Math.random() * 50) + 3,
+        image: image,
+        badge: 'Gợi ý',
+        stock: rec.stock,
+        categoryId: undefined,
+        categoryName: undefined,
+        compositions: undefined
+      } as Product;
+    });
+  }, [recommendationsData]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % BANNER_IMAGES.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []); // Empty dependency array
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % BANNER_IMAGES.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + BANNER_IMAGES.length) % BANNER_IMAGES.length
+    );
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const handleAddToCart = useCallback(
+    async (
+      e: React.MouseEvent,
+      productId: number,
+      productName: string,
+      stock: number | null | undefined
+    ) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Check stock before adding to cart
+      if (stock === null || stock === undefined || stock <= 0) {
+        toast({
+          title: 'Không thể thêm vào giỏ hàng',
+          description: 'Sản phẩm đã hết hàng',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const payload = {
+        productId: productId,
+        quantity: 1
+      };
+      const [error] = await addItemToCart(payload);
+
+      if (error) {
+        toast({
+          title: 'Thêm sản phẩm vào giỏ hàng thất bại',
+          description:
+            error.message || 'Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Thêm sản phẩm vào giỏ hàng thành công',
+        description: `${productName} đã được thêm vào giỏ hàng`,
+        variant: 'default'
+      });
+    },
+    [addItemToCart]
+  );
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
   };
 
   // Loading state
@@ -655,6 +746,57 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Personalized Recommendations - Only show when user is logged in */}
+      {accessToken && recommendationsData && recommendedProducts.length > 0 && (
+        <section className="bg-gradient-to-br from-rose-50 to-pink-50 py-16">
+          <div className="container mx-auto px-4">
+            <motion.div
+              className="mb-8 flex items-center justify-between"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div>
+                <h2 className="mb-2 text-4xl font-bold text-gray-800">
+                  Hoa gợi ý cho bạn
+                </h2>
+                <p className="text-gray-600">
+                  {recommendedProducts.length} sản phẩm được đề xuất dành riêng
+                  cho bạn
+                </p>
+              </div>
+            </motion.div>
+
+            {isLoadingRecommendations ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-rose-600 border-t-transparent"></div>
+                  <p className="text-sm text-gray-600">Đang tải gợi ý...</p>
+                </div>
+              </div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-100px' }}
+              >
+                {recommendedProducts.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Products by Category */}
       {categorizedProducts.map((category, catIndex) => (
         <section
@@ -696,7 +838,12 @@ export default function HomePage() {
               viewport={{ once: true, margin: '-100px' }}
             >
               {category.products.slice(0, 8).map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  index={index}
+                  onAddToCart={handleAddToCart}
+                />
               ))}
             </motion.div>
 

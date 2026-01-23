@@ -688,7 +688,7 @@ export default function CheckoutModal({
                     </Button>
                     <Button
                       onClick={handleConfirmCheckout}
-                      disabled={isPending}
+                      disabled={isPending || finalAmount === 0}
                       className="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700"
                     >
                       {isPending ? (
